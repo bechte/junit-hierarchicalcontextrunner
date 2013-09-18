@@ -1,1 +1,9 @@
-target/
+.gitattributes
+bin
+target
+out
+# IntelliJ
+.idea
+*.ipr
+*.iml
+*.iws
