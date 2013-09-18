@@ -76,17 +76,6 @@ public class BankTest {
                 public void shouldHaveOldInterestRate() throws Exception {
                     assertMoneyEquals(2.75, oldAccount.getInterestRate());
                 }
-
-                @Test
-                public void failingTest() throws Exception {
-                    assertMoneyEquals(1.0, Bank.currentInterestRate);
-                }
-
-                @Test
-                @Ignore
-                public void ignoredTest() throws Exception {
-                    // whatever
-                }
             }
         }
     }
