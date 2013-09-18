@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
 
     <name>JUnit Hierarchical Context Runner</name>
-    <version>4.11</version>
+    <version>4.12-SNAPSHOT</version>
     <description>
         This is a runner implementation that supports context hierarchies in JUnit. For more
         details please visit: https://github.com/bechte/junit/wiki/JUnit-Context-Hierarchies
