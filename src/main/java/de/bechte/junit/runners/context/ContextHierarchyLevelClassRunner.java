@@ -1,4 +1,4 @@
-package org.junit.experimental.runners.context;
+package de.bechte.junit.runners.context;
 
 import org.junit.After;
 import org.junit.Before;

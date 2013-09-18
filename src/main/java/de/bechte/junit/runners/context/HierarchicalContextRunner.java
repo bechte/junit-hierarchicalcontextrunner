@@ -1,4 +1,4 @@
-package org.junit.experimental.runners.context;
+package de.bechte.junit.runners.context;
 
 import org.junit.Test;
 import org.junit.internal.runners.statements.Fail;

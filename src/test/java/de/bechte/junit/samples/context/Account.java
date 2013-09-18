@@ -1,4 +1,4 @@
-package org.junit.samples.hierarchicalcontext;
+package de.bechte.junit.samples.context;
 
 public class Account {
     private double balance = 0.0;

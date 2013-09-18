@@ -1,7 +1,7 @@
-package org.junit.samples.hierarchicalcontext;
+package de.bechte.junit.samples.context;
 
 import org.junit.*;
-import org.junit.experimental.runners.context.HierarchicalContextRunner;
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
