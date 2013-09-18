@@ -15,6 +15,15 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The {@link HierarchicalContextRunner} allows test classes to have member
+ * classes. These member classes are interpreted as context hierarchies,
+ * allowing you to group your JUnit tests that use the same preconditions.
+ *
+ *
+ * Please refer to the wiki for a sample and more information:
+ * https://github.com/bechte/junit-hierarchicalcontextrunner/wiki
+ */
 public class HierarchicalContextRunner extends ParentRunner<Class<?>> {
     public HierarchicalContextRunner(final Class<?> testClass) throws InitializationError {
         super(testClass);

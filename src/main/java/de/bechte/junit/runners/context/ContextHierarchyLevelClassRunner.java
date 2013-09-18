@@ -17,6 +17,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * This runner is used to execute the tests within a level of the context
+ * hierarchy. For each test within the member classes, all @Before and @After
+ * methods of the entire context hierarchy are executed. Also, @Rule
+ * annotations are evaluated.
+ *
+ * Please refer to the wiki for a sample and more information:
+ * https://github.com/bechte/junit-hierarchicalcontextrunner/wiki
+ */
 class ContextHierarchyLevelClassRunner extends BlockJUnit4ClassRunner {
     private LinkedList<Object> instances = null;
 
