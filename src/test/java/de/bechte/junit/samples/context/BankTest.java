@@ -67,9 +67,17 @@ public class BankTest {
             }
 
             public class AfterInterestRateChangeContext {
+                private double oldInterestRate;
+
                 @Before
                 public void changeInterestRate() {
+                    oldInterestRate = Bank.currentInterestRate;
                     Bank.currentInterestRate = 3.25;
+                }
+
+                @After
+                public void resetInterestRate() {
+                    Bank.currentInterestRate = oldInterestRate;
                 }
 
                 @Test
