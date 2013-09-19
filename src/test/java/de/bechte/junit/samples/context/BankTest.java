@@ -22,8 +22,8 @@ public class BankTest {
         System.out.println("Cleanup Database, etc...");
     }
 
-    private static void assertMoneyEquals(double expected, double actual) {
-        assertEquals(expected, actual, MONEY_DELTA);
+    private static void assertMoneyEquals(String message, double expected, double actual) {
+        assertEquals(message, expected, actual, MONEY_DELTA);
     }
 
     public class BankContext {
@@ -36,7 +36,7 @@ public class BankTest {
         public void interestRateIsSet() {
             // Rather stupid test, but it shows, that tests
             // on this level get also executed smoothly...
-            assertMoneyEquals(2.75, Bank.currentInterestRate);
+            assertMoneyEquals("Bank interest rate was not set", 2.75, Bank.currentInterestRate);
         }
 
         public class NewAccountContext {
@@ -49,12 +49,12 @@ public class BankTest {
 
             @Test
             public void balanceIsZero() throws Exception {
-                assertMoneyEquals(0.0, newAccount.getBalance());
+                assertMoneyEquals("Balance was not zero", 0.0, newAccount.getBalance());
             }
 
             @Test
             public void interestRateIsSet() throws Exception {
-                assertMoneyEquals(2.75, newAccount.getInterestRate());
+                assertMoneyEquals("Interest rate is not fixed", 2.75, newAccount.getInterestRate());
             }
         }
 
@@ -74,7 +74,7 @@ public class BankTest {
 
                 @Test
                 public void shouldHaveOldInterestRate() throws Exception {
-                    assertMoneyEquals(2.75, oldAccount.getInterestRate());
+                    assertMoneyEquals("Interest rate is not fixed", 2.75, oldAccount.getInterestRate());
                 }
             }
         }
