@@ -1,14 +1,19 @@
 package de.bechte.junit.samples.context;
 
-import org.junit.*;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import org.junit.rules.ExpectedException;
+import org.junit.*;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(HierarchicalContextRunner.class)
 public class BankTest {
     private static final double MONEY_DELTA = .00001;
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClassFirstLevel() throws Exception {
@@ -22,11 +27,12 @@ public class BankTest {
         System.out.println("Cleanup Database, etc...");
     }
 
-    private static void assertMoneyEquals(String message, double expected, double actual) {
-        assertEquals(message, expected, actual, MONEY_DELTA);
+    private static void assertMoneyEquals(double expected, double actual) {
+        assertEquals(expected, actual, MONEY_DELTA);
     }
 
     public class BankContext {
+
         @Before
         public void setCurrentInterestRate() {
             Bank.currentInterestRate = 2.75;
@@ -36,7 +42,7 @@ public class BankTest {
         public void interestRateIsSet() {
             // Rather stupid test, but it shows, that tests
             // on this level get also executed smoothly...
-            assertMoneyEquals("Bank interest rate was not set", 2.75, Bank.currentInterestRate);
+            assertMoneyEquals(2.75, Bank.currentInterestRate);
         }
 
         public class NewAccountContext {
@@ -49,12 +55,12 @@ public class BankTest {
 
             @Test
             public void balanceIsZero() throws Exception {
-                assertMoneyEquals("Balance was not zero", 0.0, newAccount.getBalance());
+                assertMoneyEquals(0.0, newAccount.getBalance());
             }
 
             @Test
             public void interestRateIsSet() throws Exception {
-                assertMoneyEquals("Interest rate is not fixed", 2.75, newAccount.getInterestRate());
+                assertMoneyEquals(2.75, newAccount.getInterestRate());
             }
         }
 
@@ -67,23 +73,34 @@ public class BankTest {
             }
 
             public class AfterInterestRateChangeContext {
-                private double oldInterestRate;
-
                 @Before
                 public void changeInterestRate() {
-                    oldInterestRate = Bank.currentInterestRate;
                     Bank.currentInterestRate = 3.25;
-                }
-
-                @After
-                public void resetInterestRate() {
-                    Bank.currentInterestRate = oldInterestRate;
                 }
 
                 @Test
                 public void shouldHaveOldInterestRate() throws Exception {
-                    assertMoneyEquals("Interest rate is not fixed", 2.75, oldAccount.getInterestRate());
+                    assertMoneyEquals(2.75, oldAccount.getInterestRate());
                 }
+            }
+
+        }
+
+        public class FailingAndIgnoredTestContext {
+            @Test
+            public void failingTest() throws Exception {
+                fail("I always fail!");
+            }
+
+            @Test
+            public void testExpectingAnExceptionWithRule() throws Exception {
+                exception.expect(Exception.class);
+            }
+
+            @Test
+            @Ignore
+            public void ignoredTest() throws Exception {
+                System.out.println("I should never be executed!");
             }
         }
     }

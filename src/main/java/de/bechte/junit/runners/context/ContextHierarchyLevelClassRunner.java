@@ -2,8 +2,11 @@ package de.bechte.junit.runners.context;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.internal.runners.statements.RunAfters;
 import org.junit.internal.runners.statements.RunBefores;
+import org.junit.rules.MethodRule;
+import org.junit.rules.TestRule;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -13,6 +16,7 @@ import org.junit.runners.model.TestClass;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -77,7 +81,7 @@ class ContextHierarchyLevelClassRunner extends BlockJUnit4ClassRunner {
         Statement statement = next;
         for (int i = instances.size() - 1; i >= 0; i--) {
             final Object instance = instances.get(i);
-            final TestClass tClass = new TestClass(instance.getClass());
+            final TestClass tClass = TestClassPool.forClass(instance.getClass());
             final List<FrameworkMethod> befores = tClass.getAnnotatedMethods(Before.class);
             statement = befores.isEmpty() ? statement : new RunBefores(statement, befores, instance);
         }
@@ -89,7 +93,7 @@ class ContextHierarchyLevelClassRunner extends BlockJUnit4ClassRunner {
         Statement statement = next;
         for (int i = instances.size() - 1; i >= 0; i--) {
             final Object instance = instances.get(i);
-            final TestClass tClass = new TestClass(instance.getClass());
+            final TestClass tClass = TestClassPool.forClass(instance.getClass());
             final List<FrameworkMethod> afters = tClass.getAnnotatedMethods(After.class);
             statement = afters.isEmpty() ? statement : new RunAfters(statement, afters, instance);
         }
@@ -97,32 +101,53 @@ class ContextHierarchyLevelClassRunner extends BlockJUnit4ClassRunner {
     }
 
     @Override
+    protected List<org.junit.rules.MethodRule> rules(Object target) {
+        final List<MethodRule> rules = new ArrayList<MethodRule>();
+        for (int i = instances.size() - 1; i >= 0; i--) {
+            final TestClass tClass = TestClassPool.forClass(instances.get(i).getClass());
+            rules.addAll(tClass.getAnnotatedFieldValues(instances.get(i), Rule.class, MethodRule.class));
+        }
+        return rules;
+    }
+
+    @Override
+    protected List<TestRule> getTestRules(Object target) {
+        final List<TestRule> rules = new ArrayList<TestRule>();
+        for (int i = instances.size() - 1; i >= 0; i--) {
+            final TestClass tClass = TestClassPool.forClass(instances.get(i).getClass());
+            rules.addAll(tClass.getAnnotatedMethodValues(instances.get(i), Rule.class, TestRule.class));
+            rules.addAll(tClass.getAnnotatedFieldValues(instances.get(i), Rule.class, TestRule.class));
+        }
+        return rules;
+    }
+
+    @Override
     protected Object createTest() throws Exception {
-        ensureHierarchicalFixturesAreValid();
+        instances = createHierarchicalFixtures();
         return instances.getLast();
     }
 
     /**
-     * Returns new fixtures for the entire class hierarchy for running a test.
+     * Creates new fixtures for the entire class hierarchy for running a test.
      * Default implementation executes the test class's no-argument constructor
      * and the inner class default constructor taking the outer class' instance
      * (validation should have ensured one exists).
      */
-    protected synchronized void ensureHierarchicalFixturesAreValid() throws Exception {
-        if (instances == null) {
-            final Stack<Class<?>> classHierarchy = getClassHierarchy();
-            instances = new LinkedList<Object>();
+    protected LinkedList<Object> createHierarchicalFixtures() throws Exception {
+        final Stack<Class<?>> classHierarchy = getClassHierarchy();
+        LinkedList<Object> instances = new LinkedList<Object>();
 
-            // Top level class has empty constructor
-            instances.add(classHierarchy.pop().newInstance());
+        // Top level class has empty constructor
+        instances.add(classHierarchy.pop().newInstance());
 
-            // Inner class constructors require the enclosing instance
-            while (!classHierarchy.empty()) {
-                final Object enclosingInstance = instances.getLast();
-                final Class<?> innerClass = classHierarchy.pop();
-                instances.add(createInnerInstance(enclosingInstance, innerClass));
-            }
+        // Inner class constructors require the enclosing instance
+        while (!classHierarchy.empty()) {
+            final Object enclosingInstance = instances.getLast();
+            final Class<?> innerClass = classHierarchy.pop();
+            instances.add(createInnerInstance(enclosingInstance, innerClass));
         }
+
+        return instances;
     }
 
     private Stack<Class<?>> getClassHierarchy() {
