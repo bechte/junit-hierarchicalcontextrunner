@@ -32,7 +32,6 @@ public class BankTest {
     }
 
     public class BankContext {
-
         @Before
         public void setCurrentInterestRate() {
             Bank.currentInterestRate = 2.75;
@@ -90,6 +89,11 @@ public class BankTest {
             @Test
             public void failingTest() throws Exception {
                 fail("I always fail!");
+            }
+
+            @Test(expected = Exception.class)
+            public void testExpectingAnException() throws Exception {
+                System.out.println("Should fail without exception!");
             }
 
             @Test

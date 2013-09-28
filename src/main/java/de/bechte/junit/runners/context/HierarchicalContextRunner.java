@@ -1,124 +1,150 @@
 package de.bechte.junit.runners.context;
 
-import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
+import de.bechte.junit.runners.context.description.ContextDescriber;
+import de.bechte.junit.runners.context.description.Describer;
+import de.bechte.junit.runners.context.description.MethodDescriber;
+import de.bechte.junit.runners.context.processing.ChildExecutor;
+import de.bechte.junit.runners.context.processing.ContextExecutor;
+import de.bechte.junit.runners.context.processing.MethodExecutor;
+import de.bechte.junit.runners.context.processing.ChildResolver;
+import de.bechte.junit.runners.context.processing.ContextResolver;
+import de.bechte.junit.runners.context.processing.MethodResolver;
+import de.bechte.junit.runners.context.statements.RunAll;
+import de.bechte.junit.runners.context.statements.RunChildren;
+import de.bechte.junit.runners.context.statements.StatementExecutor;
+import de.bechte.junit.runners.model.TestClassPool;
+import de.bechte.junit.runners.validation.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.internal.runners.statements.RunAfters;
+import org.junit.internal.runners.statements.RunBefores;
+import org.junit.rules.RunRules;
+import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
-import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.ParentRunner;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * The {@link HierarchicalContextRunner} allows test classes to have member
- * classes. These member classes are interpreted as context hierarchies,
- * allowing you to group your JUnit tests that use the same preconditions.
- *
+ * The {@link HierarchicalContextRunner} allows test classes to have member classes. These member classes are
+ * interpreted as context hierarchies, allowing you to group your JUnit tests that use the same preconditions.
  *
  * Please refer to the wiki for a sample and more information:
  * https://github.com/bechte/junit-hierarchicalcontextrunner/wiki
  */
-public class HierarchicalContextRunner extends ParentRunner<Class<?>> {
-    public HierarchicalContextRunner(final Class<?> testClass) throws InitializationError {
-        super(testClass);
+public class HierarchicalContextRunner extends Runner {
+    protected final TestClass testClass;
+    protected ChildResolver<FrameworkMethod> methodResolver;
+    protected Describer<FrameworkMethod> methodDescriber;
+    protected ChildExecutor<FrameworkMethod> methodRunner;
+    protected ChildResolver<Class<?>> contextResolver;
+    protected Describer<Class<?>> contextDescriber;
+    protected ChildExecutor<Class<?>> contextRunner;
+
+    public HierarchicalContextRunner(final Class<?> clazz) throws InitializationError {
+        this.testClass = TestClassPool.forClass(clazz);
+
+        validate();
+        initialize();
     }
 
-    @Override
-    protected List<Class<?>> getChildren() {
-        final Class<?>[] declaredClasses = getTestClass().getJavaClass().getDeclaredClasses();
-        final List<Class<?>> children = new ArrayList<Class<?>>(declaredClasses.length);
-
-        for (final Class<?> child : declaredClasses)
-            if (!Modifier.isStatic(child.getModifiers()))
-                children.add(child);
-
-        return children;
+    private void validate() throws InitializationError {
+        final List<Throwable> errors = new ArrayList<Throwable>();
+        getValidator().validate(testClass, errors);
+        if (!errors.isEmpty())
+            throw new InitializationError(errors);
     }
 
-    @Override
-    protected Description describeChild(final Class<?> tClass) {
-        try {
-            // Retrieve the description from the runner
-            return new HierarchicalContextRunner(tClass).getDescription();
-        } catch (InitializationError e) {
-            return Description.createTestDescription(tClass, tClass.getName(), tClass.getAnnotations());
-        }
+    /**
+     * Returns a {@link List} of {@link TestClassValidator}s that validate the {@link TestClass} instance after the
+     * {@link HierarchicalContextRunner} has been created for the corresponding {@link Class}.
+     *
+     * Note: Clients may override this method to add or remove validators.
+     *
+     * @return a {@link List} of {@link TestClassValidator}s
+     */
+    protected TestClassValidator getValidator() {
+        return BooleanValidator.AND(
+                ConstructorValidator.VALID_CONSTRUCTOR,
+                BooleanValidator.OR(
+                        ChildrenCountValidator.CONTEXT_HIERARCHIES,
+                        ChildrenCountValidator.TEST_METHODS
+                ),
+                FixtureValidator.BEFORE_CLASS_METHODS,
+                FixtureValidator.AFTER_CLASS_METHODS,
+                FixtureValidator.BEFORE_METHODS,
+                FixtureValidator.AFTER_METHODS,
+                FixtureValidator.TEST_METHODS,
+                RuleValidator.CLASS_RULE_VALIDATOR,
+                RuleValidator.CLASS_RULE_METHOD_VALIDATOR,
+                RuleValidator.RULE_VALIDATOR,
+                RuleValidator.RULE_METHOD_VALIDATOR
+        );
     }
 
-    @Override
-    protected void runChild(final Class<?> tClass, final RunNotifier runNotifier) {
-        try {
-            new HierarchicalContextRunner(tClass).run(runNotifier);
-        } catch (InitializationError e) {
-            runNotifier.fireTestFailure(new Failure(getDescription(), e));
-        }
-    }
+    /**
+     * Initializes all dependencies for the {@link HierarchicalContextRunner}.
+     *
+     * Note: Clients may override this method to provide other dependencies.
+     */
+    protected void initialize() {
+        methodResolver = new MethodResolver();
+        methodDescriber = new MethodDescriber();
+        methodRunner = new MethodExecutor(methodDescriber);
 
-    @Override
-    protected String getName() {
-        return getTestClass().getJavaClass().getSimpleName();
+        contextResolver = new ContextResolver();
+        contextDescriber = new ContextDescriber(contextResolver, methodResolver, methodDescriber);
+        contextRunner = new ContextExecutor(contextDescriber);
     }
 
     @Override
     public Description getDescription() {
-        Runner runner;
-        try {
-            runner = getRunnerForContextHierarchyLevel(getTestClass());
-        } catch (InitializationError e) {
-            runner = null;
-        }
-
-        final Description description = (runner != null)
-                ? runner.getDescription()
-                : Description.createSuiteDescription(getName(), getRunnerAnnotations());
-        for (Class<?> child : getChildren())
-            description.addChild(describeChild(child));
-        return description;
+        return contextDescriber.describe(testClass.getJavaClass());
     }
 
     @Override
-    protected Statement childrenInvoker(final RunNotifier notifier) {
-        // Wrap children statement with tests for current hierarchy
-        final Statement next = super.childrenInvoker(notifier);
-        return withTestsForCurrentContextHierarchyLevel(next, notifier);
+    public void run(final RunNotifier notifier) {
+        final Statement statement = buildStatement(notifier);
+        new StatementExecutor().execute(statement, notifier, getDescription());
     }
 
-    private Statement withTestsForCurrentContextHierarchyLevel(final Statement next, final RunNotifier notifier) {
-        try {
-            final Runner runner = getRunnerForContextHierarchyLevel(getTestClass());
-            return new Statement() {
-                @Override
-                public void evaluate() throws Throwable {
-                    if (runner != null)
-                        runner.run(notifier);
-                    next.evaluate();
-                }
-            };
-        } catch (InitializationError e) {
-            return new Fail(e);
-        }
+    protected Statement buildStatement(RunNotifier notifier) {
+        Statement statement = childrenInvoker(testClass, notifier);
+        statement = withBeforeClasses(testClass, statement);
+        statement = withAfterClasses(testClass, statement);
+        statement = withClassRules(testClass, statement);
+        return statement;
     }
 
-    /**
-     * Returns a {@link Runner} for evaluating the tests of the given context
-     * class within the hierarchy level. The current implementation uses the
-     * {@link ContextHierarchyLevelClassRunner}. This method may return null,
-     * if there are no tests to run within the context hierarchy level.
-     *
-     * @param tClass the {@link TestClass} under test
-     * @return a {@link Runner} instance or null
-     * @throws InitializationError if the runner cannot be initialized
-     */
-    protected Runner getRunnerForContextHierarchyLevel(final TestClass tClass) throws InitializationError {
-        if (!tClass.getAnnotatedMethods(Test.class).isEmpty())
-            return new ContextHierarchyLevelClassRunner(tClass.getJavaClass());
-        else
-            return null;
+    protected Statement childrenInvoker(final TestClass testClass, final RunNotifier notifier) {
+        return new RunAll(
+            new RunChildren<FrameworkMethod>(testClass, methodRunner, methodResolver, notifier),
+            new RunChildren<Class<?>>(testClass, contextRunner, contextResolver, notifier)
+        );
+    }
+
+    protected Statement withBeforeClasses(final TestClass testClass, final Statement next) {
+        List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
+        return befores.isEmpty() ? next : new RunBefores(next, befores, null);
+    }
+
+    protected Statement withAfterClasses(final TestClass testClass, final Statement next) {
+        List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
+        return afters.isEmpty() ? next : new RunAfters(next, afters, null);
+    }
+
+    protected Statement withClassRules(final TestClass testClass, final Statement next) {
+        final List<TestRule> classRules = new ArrayList<TestRule>();
+        classRules.addAll(testClass.getAnnotatedMethodValues(null, ClassRule.class, TestRule.class));
+        classRules.addAll(testClass.getAnnotatedFieldValues(null, ClassRule.class, TestRule.class));
+        return classRules.isEmpty() ? next : new RunRules(next, classRules, contextDescriber.describe(testClass.getJavaClass()));
     }
 }
