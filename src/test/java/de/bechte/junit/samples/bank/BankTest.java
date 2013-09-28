@@ -1,4 +1,4 @@
-package de.bechte.junit.samples.context;
+package de.bechte.junit.samples.bank;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import org.junit.rules.ExpectedException;

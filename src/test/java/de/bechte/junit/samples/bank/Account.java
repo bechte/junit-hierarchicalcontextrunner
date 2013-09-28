@@ -1,4 +1,4 @@
-package de.bechte.junit.samples.context;
+package de.bechte.junit.samples.bank;
 
 public class Account {
     private double balance = 0.0;
