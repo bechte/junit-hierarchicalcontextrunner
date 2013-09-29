@@ -12,9 +12,11 @@ import java.util.List;
  * The {@link RunChildren} statement takes four arguments:
  * {@link TestClass}, {@link ChildExecutor}, {@link List} of children, {@link RunNotifier}
  *
- * When evaluated, the statement calls the {@link ChildExecutor#run(TestClass, T, RunNotifier)} method on each child.
+ * When evaluated, the statement calls {@link ChildExecutor#run(TestClass, Object, RunNotifier)} on each child.
  *
  * Note: The type of the {@link ChildExecutor} instance must match the type of the {@code List} of children.
+ *
+ * @param <T> the type to run
  */
 public class RunChildren<T extends Object> extends Statement {
     private final TestClass testClass;
