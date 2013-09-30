@@ -11,12 +11,12 @@ import org.junit.runner.Description;
  */
 public class MethodStatementExecutor extends StatementExecutor {
     @Override
-    protected void beforeExecution(final EachTestNotifier notifier, final Description description) {
+    protected void beforeExecution(final EachTestNotifier notifier) {
         notifier.fireTestStarted();
     }
 
     @Override
-    protected void afterExecution(final EachTestNotifier notifier, final Description description) {
+    protected void afterExecution(final EachTestNotifier notifier) {
         notifier.fireTestFinished();
     }
 }

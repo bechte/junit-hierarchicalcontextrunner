@@ -15,8 +15,8 @@ import org.junit.runners.model.Statement;
  * One can easily provide additional notifications by overriding the {@link StatementExecutor} and providing an
  * implementation for the template methods:
  *
- * {@link #beforeExecution(EachTestNotifier, Description)}
- * {@link #afterExecution(EachTestNotifier, Description)}
+ * {@link #beforeExecution(EachTestNotifier)}
+ * {@link #afterExecution(EachTestNotifier)}
  *
  * @see MethodStatementExecutor
  */
@@ -24,16 +24,16 @@ public class StatementExecutor {
     public void execute(final Statement statement, final RunNotifier notifier, final Description description) {
         final EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
         try {
-            beforeExecution(eachNotifier, description);
+            beforeExecution(eachNotifier);
             statement.evaluate();
-        } catch (AssumptionViolatedException e) {
-            eachNotifier.addFailedAssumption(e);
         } catch (final InitializationError e) {
-            eachNotifier.addFailure(new MultipleFailureException(e.getCauses()));
-        } catch (Throwable e) {
-            eachNotifier.addFailure(e);
+            whenInitializationErrorIsRaised(eachNotifier, e);
+        } catch (final AssumptionViolatedException e) {
+            whenAssumptionViolatedExceptionIsRaised(eachNotifier, e);
+        } catch (final Throwable e) {
+            whenThrowableIsRaised(eachNotifier, e);
         } finally {
-            afterExecution(eachNotifier, description);
+            afterExecution(eachNotifier);
         }
     }
 
@@ -42,9 +42,40 @@ public class StatementExecutor {
      * The call of this method is guaranteed.
      *
      * @param notifier the notifier
-     * @param description the description
      */
-    protected void beforeExecution(final EachTestNotifier notifier, final Description description) {
+    protected void beforeExecution(final EachTestNotifier notifier) {
+    }
+
+    /**
+     * Clients may override this method to add additional behavior when a {@link InitializationError} is raised.
+     * The call of this method is guaranteed.
+     *
+     * @param notifier the notifier
+     * @param e the error
+     */
+    protected void whenInitializationErrorIsRaised(final EachTestNotifier notifier, final InitializationError e) {
+        notifier.addFailure(new MultipleFailureException(e.getCauses()));
+    }
+
+    /**
+     * Clients may override this method to add additional behavior when a {@link AssumptionViolatedException} is raised.
+     * The call of this method is guaranteed.
+     *
+     * @param notifier the notifier
+     * @param e the error
+     */
+    protected void whenAssumptionViolatedExceptionIsRaised(final EachTestNotifier notifier, final AssumptionViolatedException e) {
+        notifier.addFailedAssumption(e);
+    }
+
+    /**
+     * Clients may override this method to add additional behavior when a {@link Throwable} is raised.
+     *
+     * @param notifier the notifier
+     * @param e the error
+     */
+    protected void whenThrowableIsRaised(final EachTestNotifier notifier, final Throwable e) {
+        notifier.addFailure(e);
     }
 
     /**
@@ -52,8 +83,7 @@ public class StatementExecutor {
      * The call of this method is guaranteed.
      *
      * @param notifier the notifier
-     * @param description the description
      */
-    protected void afterExecution(final EachTestNotifier notifier, final Description description) {
+    protected void afterExecution(final EachTestNotifier notifier) {
     }
 }
