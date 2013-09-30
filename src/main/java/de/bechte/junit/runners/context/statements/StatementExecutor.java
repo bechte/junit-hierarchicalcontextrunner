@@ -18,7 +18,7 @@ import org.junit.runners.model.Statement;
  * {@link #beforeExecution(EachTestNotifier, Description)}
  * {@link #afterExecution(EachTestNotifier, Description)}
  *
- * @see TestStatementExecutor
+ * @see MethodStatementExecutor
  */
 public class StatementExecutor {
     public void execute(final Statement statement, final RunNotifier notifier, final Description description) {

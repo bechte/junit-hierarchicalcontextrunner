@@ -9,18 +9,15 @@ import de.bechte.junit.runners.context.processing.MethodExecutor;
 import de.bechte.junit.runners.context.processing.ChildResolver;
 import de.bechte.junit.runners.context.processing.ContextResolver;
 import de.bechte.junit.runners.context.processing.MethodResolver;
+import de.bechte.junit.runners.context.statements.MethodStatementExecutor;
 import de.bechte.junit.runners.context.statements.RunAll;
 import de.bechte.junit.runners.context.statements.RunChildren;
+import de.bechte.junit.runners.context.statements.builder.*;
+import de.bechte.junit.runners.context.statements.builder.AfterClassStatementBuilder;
+import de.bechte.junit.runners.context.statements.builder.ClassRuleStatementBuilder;
 import de.bechte.junit.runners.context.statements.StatementExecutor;
 import de.bechte.junit.runners.model.TestClassPool;
 import de.bechte.junit.runners.validation.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.internal.runners.statements.RunAfters;
-import org.junit.internal.runners.statements.RunBefores;
-import org.junit.rules.RunRules;
-import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
@@ -29,9 +26,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * The {@link HierarchicalContextRunner} allows test classes to have member classes. These member classes are
@@ -42,15 +37,18 @@ import java.util.List;
  */
 public class HierarchicalContextRunner extends Runner {
     protected final TestClass testClass;
+
     protected ChildResolver<FrameworkMethod> methodResolver;
     protected Describer<FrameworkMethod> methodDescriber;
     protected ChildExecutor<FrameworkMethod> methodRunner;
     protected ChildResolver<Class<?>> contextResolver;
     protected Describer<Class<?>> contextDescriber;
     protected ChildExecutor<Class<?>> contextRunner;
+    protected StatementExecutor statementExecutor;
+    protected List<ClassStatementBuilder> statementBuilders;
 
-    public HierarchicalContextRunner(final Class<?> clazz) throws InitializationError {
-        this.testClass = TestClassPool.forClass(clazz);
+    public HierarchicalContextRunner(final Class<?> testClass) throws InitializationError {
+        this.testClass = TestClassPool.forClass(testClass);
 
         validate();
         initialize();
@@ -64,12 +62,13 @@ public class HierarchicalContextRunner extends Runner {
     }
 
     /**
-     * Returns a {@link List} of {@link TestClassValidator}s that validate the {@link TestClass} instance after the
-     * {@link HierarchicalContextRunner} has been created for the corresponding {@link Class}.
+     * Returns a {@link TestClassValidator} that validates the {@link TestClass} instance after the
+     * {@link HierarchicalContextRunner} has been created for the corresponding {@link Class}. To use multiple
+     * {@link TestClassValidator}s, please use the {@link BooleanValidator} AND and OR to group your validators.
      *
      * Note: Clients may override this method to add or remove validators.
      *
-     * @return a {@link List} of {@link TestClassValidator}s
+     * @return a {@link TestClassValidator}
      */
     protected TestClassValidator getValidator() {
         return BooleanValidator.AND(
@@ -96,13 +95,26 @@ public class HierarchicalContextRunner extends Runner {
      * Note: Clients may override this method to provide other dependencies.
      */
     protected void initialize() {
+        final List<MethodStatementBuilder> methodStatementBuilders = new LinkedList<MethodStatementBuilder>();
+        methodStatementBuilders.add(new ExpectExceptionStatementBuilder());
+        methodStatementBuilders.add(new FailOnTimeoutStatementBuilder());
+        methodStatementBuilders.add(new HierarchicalRunBeforeStatementBuilder());
+        methodStatementBuilders.add(new HierarchicalRunAfterStatementBuilder());
+        methodStatementBuilders.add(new HierarchicalRunRulesStatementBuilder());
+
         methodResolver = new MethodResolver();
         methodDescriber = new MethodDescriber();
-        methodRunner = new MethodExecutor(methodDescriber);
+        methodRunner = new MethodExecutor(methodDescriber, new MethodStatementExecutor(), methodStatementBuilders);
 
         contextResolver = new ContextResolver();
         contextDescriber = new ContextDescriber(contextResolver, methodResolver, methodDescriber);
         contextRunner = new ContextExecutor(contextDescriber);
+
+        statementExecutor = new StatementExecutor();
+        statementBuilders = new LinkedList<ClassStatementBuilder>();
+        statementBuilders.add(new BeforeClassStatementBuilder());
+        statementBuilders.add(new AfterClassStatementBuilder());
+        statementBuilders.add(new ClassRuleStatementBuilder());
     }
 
     @Override
@@ -112,39 +124,34 @@ public class HierarchicalContextRunner extends Runner {
 
     @Override
     public void run(final RunNotifier notifier) {
-        final Statement statement = buildStatement(notifier);
-        new StatementExecutor().execute(statement, notifier, getDescription());
+        final Description description = contextDescriber.describe(testClass.getJavaClass());
+
+        Statement statement = runChildren(description, notifier);
+        for (final ClassStatementBuilder builder : statementBuilders) {
+            statement = builder.createStatement(testClass, statement, description, notifier);
+        }
+
+        statementExecutor.execute(statement, notifier, getDescription());
     }
 
-    protected Statement buildStatement(RunNotifier notifier) {
-        Statement statement = childrenInvoker(testClass, notifier);
-        statement = withBeforeClasses(testClass, statement);
-        statement = withAfterClasses(testClass, statement);
-        statement = withClassRules(testClass, statement);
-        return statement;
-    }
-
-    protected Statement childrenInvoker(final TestClass testClass, final RunNotifier notifier) {
+    /**
+     * This method returns a {@link Statement} that is responsible for running all children of the given test class. In
+     * order to run more than one {@link Statement}, please use the {@link RunAll} statement for grouping.
+     *
+     * Note: Clients may override this method. The statement returned should only be responsible for running the
+     * children. Extra work may be registered with the {@code statementBuilders} list which is initialized during the
+     * call of {@link #initialize()}. Please register additional payload, e.g. the run of {@code @BeforeClass},
+     * {@code @AfterClass} or {@code @ClassRule}, there. {@link de.bechte.junit.runners.context.statements.builder.ClassStatementBuilder}s will be called in the order they are
+     * registered.
+     *
+     * @param description the {@link Description} of the class
+     * @param notifier the {@link RunNotifier} used for this iteration
+     * @return a {@link Statement} that runs all children
+     */
+    protected Statement runChildren(final Description description, final RunNotifier notifier) {
         return new RunAll(
             new RunChildren<FrameworkMethod>(testClass, methodRunner, methodResolver, notifier),
             new RunChildren<Class<?>>(testClass, contextRunner, contextResolver, notifier)
         );
-    }
-
-    protected Statement withBeforeClasses(final TestClass testClass, final Statement next) {
-        List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
-        return befores.isEmpty() ? next : new RunBefores(next, befores, null);
-    }
-
-    protected Statement withAfterClasses(final TestClass testClass, final Statement next) {
-        List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
-        return afters.isEmpty() ? next : new RunAfters(next, afters, null);
-    }
-
-    protected Statement withClassRules(final TestClass testClass, final Statement next) {
-        final List<TestRule> classRules = new ArrayList<TestRule>();
-        classRules.addAll(testClass.getAnnotatedMethodValues(null, ClassRule.class, TestRule.class));
-        classRules.addAll(testClass.getAnnotatedFieldValues(null, ClassRule.class, TestRule.class));
-        return classRules.isEmpty() ? next : new RunRules(next, classRules, contextDescriber.describe(testClass.getJavaClass()));
     }
 }

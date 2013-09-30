@@ -2,22 +2,15 @@ package de.bechte.junit.runners.context.processing;
 
 import de.bechte.junit.runners.context.description.Describer;
 import de.bechte.junit.runners.context.statements.StatementExecutor;
-import de.bechte.junit.runners.context.statements.TestStatementExecutor;
-import de.bechte.junit.runners.model.TestClassPool;
+import de.bechte.junit.runners.context.statements.builder.MethodStatementBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.internal.runners.statements.ExpectException;
 import org.junit.internal.runners.statements.Fail;
 import org.junit.internal.runners.statements.FailOnTimeout;
 import org.junit.internal.runners.statements.InvokeMethod;
-import org.junit.internal.runners.statements.RunAfters;
-import org.junit.internal.runners.statements.RunBefores;
-import org.junit.rules.MethodRule;
-import org.junit.rules.RunRules;
-import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
@@ -25,11 +18,12 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+
+import static de.bechte.junit.runners.util.ReflectionUtil.getClassHierarchy;
 
 /**
  * The {@link MethodExecutor} is responsible for executing a test for the given {@link FrameworkMethod}.
@@ -63,12 +57,15 @@ import java.util.Stack;
  * setUpA(), setUpB(), test2(), tearDownB(), tearDownA()
  */
 public class MethodExecutor implements ChildExecutor<FrameworkMethod> {
-    private Describer<FrameworkMethod> describer;
-    private StatementExecutor statementExecutor;
+    protected Describer<FrameworkMethod> describer;
+    protected StatementExecutor statementExecutor;
+    protected List<MethodStatementBuilder> statementBuilders;
 
-    public MethodExecutor(final Describer<FrameworkMethod> describer) {
+    public MethodExecutor(final Describer<FrameworkMethod> describer, final StatementExecutor statementExecutor,
+                          final List<MethodStatementBuilder> statementBuilders) {
         this.describer = describer;
-        this.statementExecutor = new TestStatementExecutor();
+        this.statementExecutor = statementExecutor;
+        this.statementBuilders = new LinkedList<MethodStatementBuilder>(statementBuilders);
     }
 
     @Override
@@ -78,23 +75,19 @@ public class MethodExecutor implements ChildExecutor<FrameworkMethod> {
             notifier.fireTestIgnored(description);
         } else {
             try {
-                final Stack<Class<?>> classHierarchy = getClassHierarchy(testClass);
+                final Stack<Class<?>> classHierarchy = getClassHierarchy(testClass.getJavaClass());
                 final Object test = createTestInstance(classHierarchy);
-                Statement statement = buildStatement(method, test);
+
+                Statement statement = buildStatement(testClass, method, test, description, notifier);
+                for (final MethodStatementBuilder builder : statementBuilders) {
+                    statement = builder.createStatement(testClass, method, test, statement, description, notifier);
+                }
+
                 statementExecutor.execute(statement, notifier, description);
             } catch (Throwable t) {
                 statementExecutor.execute(new Fail(t), notifier, description);
             }
         }
-    }
-
-    private Stack<Class<?>> getClassHierarchy(final TestClass testClass) {
-        final Stack<Class<?>> classHierarchy = new Stack<Class<?>>();
-        for (Class<?> currentClass = testClass.getJavaClass();
-             currentClass != null;
-             currentClass = currentClass.getEnclosingClass())
-            classHierarchy.push(currentClass);
-        return classHierarchy;
     }
 
     private Object createTestInstance(final Stack<Class<?>> classHierarchy) throws Throwable {
@@ -119,81 +112,8 @@ public class MethodExecutor implements ChildExecutor<FrameworkMethod> {
         }
     }
 
-    protected Statement buildStatement(final FrameworkMethod method, final Object test) {
-        Statement statement = new InvokeMethod(method, test);
-        statement = withExpectingExceptions(method, statement);
-        statement = withPotentialTimeout(method, statement);
-
-        try {
-            final List<TestRule> testRules = new ArrayList<TestRule>();
-            final List<MethodRule> methodRules = new ArrayList<MethodRule>();
-
-            for (Object instance = test; instance != null; instance = getEnclosingInstance(instance)) {
-                final TestClass testClass = TestClassPool.forClass(instance.getClass());
-                statement = withBefores(method, testClass, instance, statement);
-                statement = withAfters(method, testClass, instance, statement);
-
-                testRules.addAll(testClass.getAnnotatedMethodValues(instance, Rule.class, TestRule.class));
-                testRules.addAll(testClass.getAnnotatedFieldValues(instance, Rule.class, TestRule.class));
-                methodRules.addAll(testClass.getAnnotatedFieldValues(instance, Rule.class, MethodRule.class));
-            }
-
-            statement = withRules(method, test, statement, testRules, methodRules);
-        } catch (final IllegalAccessException e) {
-            statement = new Fail(e);
-        }
-
-        return statement;
-    }
-
-    protected Statement withExpectingExceptions(final FrameworkMethod method, final Statement next) {
-        final Test annotation = method.getAnnotation(Test.class);
-        return annotation.expected() == Test.None.class ? next : new ExpectException(next, annotation.expected());
-    }
-
-    protected Statement withPotentialTimeout(final FrameworkMethod method, final Statement next) {
-        final Test annotation = method.getAnnotation(Test.class);
-        return annotation.timeout() <= 0 ? next : new FailOnTimeout(next, annotation.timeout());
-    }
-
-    protected Statement withBefores(final FrameworkMethod method, final TestClass testClass,
-                                    final Object target, final Statement next) {
-        final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(Before.class);
-        return befores.isEmpty() ? next : new RunBefores(next, befores, target);
-    }
-
-    protected Statement withAfters(final FrameworkMethod method, final TestClass testClass,
-                                   final Object target, final Statement next) {
-        final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(After.class);
-        return afters.isEmpty() ? next : new RunAfters(next, afters, target);
-    }
-
-    protected Statement withRules(final FrameworkMethod method, final Object target, final Statement next,
-                                  final List<TestRule> testRules, final List<MethodRule> methodRules) {
-        Statement statement = next;
-
-        for (MethodRule methodRule : methodRules)
-            if (!testRules.contains(methodRule))
-                statement = methodRule.apply(statement, method, target);
-
-        if (!testRules.isEmpty())
-            statement = new RunRules(statement, testRules, describer.describe(method));
-
-        return statement;
-    }
-
-    protected static Object getEnclosingInstance(final Object target) throws IllegalAccessException {
-        final Class<?> targetClass = target.getClass();
-        if (!targetClass.isMemberClass())
-            return null;
-
-        final Class<?> enclosingClass = targetClass.getEnclosingClass();
-        for (final Field field : targetClass.getDeclaredFields()) {
-            if (field.getType().equals(enclosingClass)) {
-                field.setAccessible(true);
-                return field.get(target);
-            }
-        }
-        return null;
+    protected Statement buildStatement(final TestClass testClass, final FrameworkMethod method, final Object target,
+                                       final Description description, final RunNotifier notifier) {
+        return new InvokeMethod(method, target);
     }
 }
