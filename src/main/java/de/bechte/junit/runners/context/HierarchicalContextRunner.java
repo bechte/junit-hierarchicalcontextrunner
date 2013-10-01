@@ -9,15 +9,19 @@ import de.bechte.junit.runners.context.processing.MethodExecutor;
 import de.bechte.junit.runners.context.processing.ChildResolver;
 import de.bechte.junit.runners.context.processing.ContextResolver;
 import de.bechte.junit.runners.context.processing.MethodResolver;
-import de.bechte.junit.runners.context.statements.MethodStatementExecutor;
 import de.bechte.junit.runners.context.statements.RunAll;
 import de.bechte.junit.runners.context.statements.RunChildren;
-import de.bechte.junit.runners.context.statements.builder.*;
-import de.bechte.junit.runners.context.statements.builder.AfterClassStatementBuilder;
-import de.bechte.junit.runners.context.statements.builder.ClassRuleStatementBuilder;
 import de.bechte.junit.runners.context.statements.StatementExecutor;
+import de.bechte.junit.runners.context.statements.StatementExecutorFactory;
+import de.bechte.junit.runners.context.statements.builder.ClassStatementBuilder;
+import de.bechte.junit.runners.context.statements.builder.StatementBuilderFactory;
 import de.bechte.junit.runners.model.TestClassPool;
-import de.bechte.junit.runners.validation.*;
+import de.bechte.junit.runners.validation.BooleanValidator;
+import de.bechte.junit.runners.validation.ChildrenCountValidator;
+import de.bechte.junit.runners.validation.ConstructorValidator;
+import de.bechte.junit.runners.validation.FixtureValidator;
+import de.bechte.junit.runners.validation.RuleValidator;
+import de.bechte.junit.runners.validation.TestClassValidator;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
@@ -26,7 +30,8 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The {@link HierarchicalContextRunner} allows test classes to have member classes. These member classes are
@@ -95,26 +100,21 @@ public class HierarchicalContextRunner extends Runner {
      * Note: Clients may override this method to provide other dependencies.
      */
     protected void initialize() {
-        final List<MethodStatementBuilder> methodStatementBuilders = new LinkedList<MethodStatementBuilder>();
-        methodStatementBuilders.add(new ExpectExceptionStatementBuilder());
-        methodStatementBuilders.add(new FailOnTimeoutStatementBuilder());
-        methodStatementBuilders.add(new HierarchicalRunBeforeStatementBuilder());
-        methodStatementBuilders.add(new HierarchicalRunAfterStatementBuilder());
-        methodStatementBuilders.add(new HierarchicalRunRulesStatementBuilder());
+        final StatementExecutorFactory statementExecutorFactory = StatementExecutorFactory.getDefault();
+        final StatementBuilderFactory statementBuilderFactory = StatementBuilderFactory.getDefault();
 
         methodResolver = new MethodResolver();
         methodDescriber = new MethodDescriber();
-        methodRunner = new MethodExecutor(methodDescriber, new MethodStatementExecutor(), methodStatementBuilders);
+        methodRunner = new MethodExecutor(methodDescriber,
+                statementExecutorFactory.getExecutorForMethods(),
+                statementBuilderFactory.getBuildersForMethods());
 
         contextResolver = new ContextResolver();
         contextDescriber = new ContextDescriber(contextResolver, methodResolver, methodDescriber);
         contextRunner = new ContextExecutor(contextDescriber);
 
-        statementExecutor = new StatementExecutor();
-        statementBuilders = new LinkedList<ClassStatementBuilder>();
-        statementBuilders.add(new BeforeClassStatementBuilder());
-        statementBuilders.add(new AfterClassStatementBuilder());
-        statementBuilders.add(new ClassRuleStatementBuilder());
+        statementExecutor = statementExecutorFactory.getExecutorForClasses();
+        statementBuilders = statementBuilderFactory.getBuildersForClasses();
     }
 
     @Override

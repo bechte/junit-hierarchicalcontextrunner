@@ -19,7 +19,6 @@ import org.junit.runners.model.TestClass;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
@@ -65,7 +64,7 @@ public class MethodExecutor implements ChildExecutor<FrameworkMethod> {
                           final List<MethodStatementBuilder> statementBuilders) {
         this.describer = describer;
         this.statementExecutor = statementExecutor;
-        this.statementBuilders = new LinkedList<MethodStatementBuilder>(statementBuilders);
+        this.statementBuilders = statementBuilders;
     }
 
     @Override

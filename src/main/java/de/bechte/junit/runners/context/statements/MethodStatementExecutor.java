@@ -1,7 +1,6 @@
 package de.bechte.junit.runners.context.statements;
 
 import org.junit.internal.runners.model.EachTestNotifier;
-import org.junit.runner.Description;
 
 /**
  * The {@link MethodStatementExecutor} extends the {@link StatementExecutor}, providing additional notifications when
