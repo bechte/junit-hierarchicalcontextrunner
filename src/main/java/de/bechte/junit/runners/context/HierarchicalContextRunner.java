@@ -124,14 +124,14 @@ public class HierarchicalContextRunner extends Runner {
 
     @Override
     public void run(final RunNotifier notifier) {
-        final Description description = contextDescriber.describe(testClass.getJavaClass());
+        final Description description = getDescription();
 
         Statement statement = runChildren(description, notifier);
         for (final ClassStatementBuilder builder : statementBuilders) {
             statement = builder.createStatement(testClass, statement, description, notifier);
         }
 
-        statementExecutor.execute(statement, notifier, getDescription());
+        statementExecutor.execute(statement, notifier, description);
     }
 
     /**

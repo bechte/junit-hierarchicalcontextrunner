@@ -18,15 +18,15 @@ public class SuiteDescriber implements Describer<Class<?>> {
     }
 
     @Override
-    public Description describe(final Class<?> contextClass) {
-        final Description description = Description.createSuiteDescription(contextClass);
-        final TestClass contextTestClass = TestClassPool.forClass(contextClass);
-        addChildren(description, contextTestClass);
+    public Description describe(final Class<?> suiteClass) {
+        final Description description = Description.createSuiteDescription(suiteClass);
+        final TestClass testClass = TestClassPool.forClass(suiteClass);
+        addChildren(description, testClass);
         return description;
     }
 
-    protected void addChildren(final Description description, final TestClass contextTestClass) {
-        for (Class<?> context : childResolver.getChildren(contextTestClass))
-            description.addChild(this.describe(context));
+    protected void addChildren(final Description description, final TestClass testClass) {
+        for (final Class<?> child : childResolver.getChildren(testClass))
+            description.addChild(describe(child));
     }
 }

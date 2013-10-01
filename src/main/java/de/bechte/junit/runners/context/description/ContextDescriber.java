@@ -6,10 +6,9 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 
 /**
- * The {@link ContextDescriber} is responsible for creating the {@link Description} for a context hierarchy.
- * A context hierarchy can contain tests and other context hierarchies. This class handles all tests and
- * context hierarchies found by the given resolvers. For the description of the tests the injected
- * {@link Describer} is called.
+ * The {@link ContextDescriber} is responsible for creating the {@link Description} for a context hierarchy. A context
+ * hierarchy can contain tests and other context hierarchies. This class handles all tests and context hierarchies
+ * found by the given resolvers. For the description of the tests the injected {@link Describer} is called.
  */
 public class ContextDescriber extends SuiteDescriber {
     private final ChildResolver<FrameworkMethod> methodResolver;
@@ -23,10 +22,10 @@ public class ContextDescriber extends SuiteDescriber {
     }
 
     @Override
-    protected void addChildren(final Description description, final TestClass contextTestClass) {
-        for (FrameworkMethod method : methodResolver.getChildren(contextTestClass))
+    protected void addChildren(final Description description, final TestClass testClass) {
+        for (final FrameworkMethod method : methodResolver.getChildren(testClass))
             description.addChild(methodDescriber.describe(method));
 
-        super.addChildren(description, contextTestClass);
+        super.addChildren(description, testClass);
     }
 }
