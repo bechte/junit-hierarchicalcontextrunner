@@ -3,6 +3,8 @@ package de.bechte.junit.runners.util;
 import java.lang.reflect.Field;
 import java.util.Stack;
 
+import static java.lang.reflect.Modifier.isStatic;
+
 /**
  * Set of helper methods to retrieve information using Java's reflection API.
  */
@@ -18,12 +20,17 @@ public final class ReflectionUtil {
      *
      * @param target the {@link Object} to retrieve the enclosing instance for
      * @return the enclosing {@link Object} of {@code target}
+     * @throws IllegalArgumentException If {@code target} is {@code null}.
      * @throws IllegalAccessException An instance of the enclosing class is kept in a private field within the enclosed
      * instance. Accessing the field might throw an {@link IllegalAccessException}.
+     * @throws IllegalStateException If no field containing the enclosing instance can be found.
      */
     public static Object getEnclosingInstance(final Object target) throws IllegalAccessException {
+        if (target == null)
+            throw new IllegalArgumentException("Target must not be null!");
+
         final Class<?> targetClass = target.getClass();
-        if (!targetClass.isMemberClass())
+        if (isStatic(targetClass.getModifiers()) || !targetClass.isMemberClass())
             return null;
 
         final Class<?> enclosingClass = targetClass.getEnclosingClass();
@@ -33,7 +40,8 @@ public final class ReflectionUtil {
                 return field.get(target);
             }
         }
-        return null;
+
+        throw new IllegalStateException("Member instance has no field containing the enclosing instance!");
     }
 
     /**
@@ -44,8 +52,11 @@ public final class ReflectionUtil {
      */
     public static Stack<Class<?>> getClassHierarchy(final Class<?> clazz) {
         final Stack<Class<?>> classHierarchy = new Stack<Class<?>>();
-        for (Class<?> c = clazz; c != null; c = c.getEnclosingClass())
+        Class<?> c = clazz;
+        while (c != null) {
             classHierarchy.push(c);
+            c = (isStatic(c.getModifiers())) ? null : c.getEnclosingClass();
+        }
         return classHierarchy;
     }
 }

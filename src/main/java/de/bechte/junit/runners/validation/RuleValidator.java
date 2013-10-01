@@ -18,7 +18,7 @@ public enum RuleValidator implements TestClassValidator {
 
     private final RuleFieldValidator validator;
 
-    private RuleValidator(RuleFieldValidator validator) {
+    private RuleValidator(final RuleFieldValidator validator) {
         this.validator = validator;
     }
 

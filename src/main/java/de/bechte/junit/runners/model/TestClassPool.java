@@ -30,10 +30,15 @@ public final class TestClassPool {
      *
      * @param testClass the {@link Class} to create an {@link TestClass} instance for
      * @return the {@link TestClass} instance
+     * @throws IllegalArgumentException If {@code testClass} is {@code null}.
      */
     public static TestClass forClass(final Class<?> testClass) {
+        if (testClass == null)
+            throw new IllegalArgumentException("TestClass must not be null!");
+
         if (!testClasses.containsKey(testClass))
             testClasses.put(testClass, new TestClass(testClass));
+
         return testClasses.get(testClass);
     }
 }
