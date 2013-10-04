@@ -96,6 +96,7 @@
                 <configuration>
                     <excludes>
                         <exclude>/de/bechte/junit/samples/**</exclude>
+                        <exclude>/de/bechte/junit/stubs/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

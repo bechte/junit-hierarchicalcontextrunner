@@ -1,6 +1,6 @@
 package de.bechte.junit.runners.util;
 
-import de.bechte.junit.runners.util.testclasses.Class1stLevel;
+import de.bechte.junit.stubs.Class1stLevel;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

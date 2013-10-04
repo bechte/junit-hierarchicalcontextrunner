@@ -11,6 +11,9 @@ import java.lang.annotation.Annotation;
 public class MethodDescriber implements Describer<FrameworkMethod> {
     @Override
     public Description describe(final FrameworkMethod method) {
+        if (method == null)
+            throw new IllegalArgumentException("Method must not be null!");
+
         final Class<?> declaringClass = method.getMethod().getDeclaringClass();
         final String methodName = method.getName();
         final Annotation[] annotations = method.getAnnotations();

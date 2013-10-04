@@ -19,6 +19,9 @@ public class SuiteDescriber implements Describer<Class<?>> {
 
     @Override
     public Description describe(final Class<?> suiteClass) {
+        if (suiteClass == null)
+            throw new IllegalArgumentException("Class must not be null!");
+
         final Description description = Description.createSuiteDescription(suiteClass);
         final TestClass testClass = TestClassPool.forClass(suiteClass);
         addChildren(description, testClass);

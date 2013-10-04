@@ -13,6 +13,7 @@ public interface Describer<T extends Object> {
      *
      * @param object the object of type T
      * @return a {@link Description} of the object
+     * @throws IllegalArgumentException if {@code object} is null
      */
     public Description describe(final T object);
 }

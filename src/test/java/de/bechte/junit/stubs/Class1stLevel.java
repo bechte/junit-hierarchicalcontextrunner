@@ -1,4 +1,4 @@
-package de.bechte.junit.runners.util.testclasses;
+package de.bechte.junit.stubs;
 
 public class Class1stLevel {
     public static class StaticClass2ndLevel {}
