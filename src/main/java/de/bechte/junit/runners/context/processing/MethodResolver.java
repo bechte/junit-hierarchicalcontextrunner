@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,6 +42,9 @@ import java.util.List;
 public class MethodResolver implements ChildResolver<FrameworkMethod> {
     @Override
     public List<FrameworkMethod> getChildren(final TestClass testClass) {
+        if (testClass == null)
+            return Collections.emptyList();
+
         return testClass.getAnnotatedMethods(Test.class);
     }
 }

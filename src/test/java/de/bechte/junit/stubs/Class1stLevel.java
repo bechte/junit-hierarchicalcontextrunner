@@ -3,6 +3,10 @@ package de.bechte.junit.stubs;
 public class Class1stLevel {
     public static class StaticClass2ndLevel {}
 
+    private class Private2ndLevelClass {}
+    class PackagePrivate2ndLevelClass {}
+    protected class Protected2ndLevelClass {}
+
     public class Class2ndLevel {
         public class Class3rdLevel {}
 

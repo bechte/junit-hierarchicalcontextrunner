@@ -32,4 +32,9 @@ public class DirectInvokeSchedulerTest {
         directInvokeScheduler.schedule(runnable);
         verify(runnable).run();
     }
+
+    @Test
+    public void providesAFinishedMethod() throws Exception {
+        directInvokeScheduler.finished();
+    }
 }

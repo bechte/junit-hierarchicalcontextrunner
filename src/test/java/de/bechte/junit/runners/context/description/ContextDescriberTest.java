@@ -4,7 +4,6 @@ import de.bechte.junit.runners.context.processing.ChildResolver;
 import de.bechte.junit.runners.model.TestClassPool;
 import de.bechte.junit.stubs.ContextTestClassStub;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -13,18 +12,13 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
 
 public class ContextDescriberTest {
     private Class contextTestClass;

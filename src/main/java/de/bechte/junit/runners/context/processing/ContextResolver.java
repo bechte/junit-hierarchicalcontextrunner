@@ -4,6 +4,7 @@ import org.junit.runners.model.TestClass;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -50,6 +51,9 @@ import java.util.List;
 public class ContextResolver implements ChildResolver<Class<?>> {
     @Override
     public List<Class<?>> getChildren(final TestClass testClass) {
+        if (testClass == null)
+            return Collections.emptyList();
+
         final Class<?>[] declaredClasses = testClass.getJavaClass().getDeclaredClasses();
         final List<Class<?>> contexts = new ArrayList<Class<?>>(declaredClasses.length);
         for (final Class<?> declaredClass : declaredClasses)

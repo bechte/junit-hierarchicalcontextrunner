@@ -3,6 +3,7 @@ package de.bechte.junit.runners.context.processing;
 import de.bechte.junit.runners.context.description.Describer;
 import de.bechte.junit.runners.context.statements.StatementExecutor;
 import de.bechte.junit.runners.context.statements.builder.MethodStatementBuilder;
+import de.bechte.junit.runners.util.ReflectionUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -17,11 +18,10 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Stack;
 
+import static de.bechte.junit.runners.util.ReflectionUtil.createDeepInstance;
 import static de.bechte.junit.runners.util.ReflectionUtil.getClassHierarchy;
 
 /**
@@ -75,39 +75,17 @@ public class MethodExecutor implements ChildExecutor<FrameworkMethod> {
         } else {
             try {
                 final Stack<Class<?>> classHierarchy = getClassHierarchy(testClass.getJavaClass());
-                final Object test = createTestInstance(classHierarchy);
+                final Object target = createDeepInstance(classHierarchy);
 
-                Statement statement = buildStatement(testClass, method, test, description, notifier);
+                Statement statement = buildStatement(testClass, method, target, description, notifier);
                 for (final MethodStatementBuilder builder : statementBuilders) {
-                    statement = builder.createStatement(testClass, method, test, statement, description, notifier);
+                    statement = builder.createStatement(testClass, method, target, statement, description, notifier);
                 }
 
                 statementExecutor.execute(statement, notifier, description);
             } catch (Throwable t) {
                 statementExecutor.execute(new Fail(t), notifier, description);
             }
-        }
-    }
-
-    private Object createTestInstance(final Stack<Class<?>> classHierarchy) throws Throwable {
-        try {
-            // Top level class has empty constructor
-            Class<?> outerClass = classHierarchy.pop();
-            Object test = outerClass.newInstance();
-
-            // Inner class constructors require the enclosing instance
-            while (!classHierarchy.empty()) {
-                final Class<?> innerClass = classHierarchy.pop();
-                final Constructor<?> innerConstructor = innerClass.getConstructor(outerClass);
-                test = innerConstructor.newInstance(test);
-                outerClass = innerClass;
-            }
-            return test;
-        } catch (final ReflectiveOperationException e) {
-            if (e instanceof InvocationTargetException)
-                throw ((InvocationTargetException) e).getTargetException();
-            else
-                throw e;
         }
     }
 

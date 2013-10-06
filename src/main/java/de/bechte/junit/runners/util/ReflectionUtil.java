@@ -1,6 +1,8 @@
 package de.bechte.junit.runners.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
 
 import static java.lang.reflect.Modifier.isStatic;
@@ -58,5 +60,37 @@ public final class ReflectionUtil {
             c = (isStatic(c.getModifiers())) ? null : c.getEnclosingClass();
         }
         return classHierarchy;
+    }
+
+    /**
+     * Returns an instance of the {@link Class}, represented by the given class hierarchy.
+     *
+     * @param classHierarchy the hierarchy representing a deep class
+     * @return the newly created instance
+     * @throws Throwable if errors occurred during construction of the instance
+     */
+    public static Object createDeepInstance(final Stack<Class<?>> classHierarchy) throws Throwable {
+        if (classHierarchy == null || classHierarchy.isEmpty())
+            throw new IllegalArgumentException("Stack must not be null or empty!");
+
+        try {
+            // Top level class has empty constructor
+            Class<?> outerClass = classHierarchy.pop();
+            Object test = outerClass.newInstance();
+
+            // Inner class constructors require the enclosing instance
+            while (!classHierarchy.empty()) {
+                final Class<?> innerClass = classHierarchy.pop();
+                final Constructor<?> innerConstructor = innerClass.getConstructor(outerClass);
+                test = innerConstructor.newInstance(test);
+                outerClass = innerClass;
+            }
+            return test;
+        } catch (final ReflectiveOperationException e) {
+            if (e instanceof InvocationTargetException)
+                throw ((InvocationTargetException) e).getTargetException();
+            else
+                throw e;
+        }
     }
 }
