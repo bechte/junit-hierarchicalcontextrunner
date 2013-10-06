@@ -12,15 +12,15 @@ public class ContextTestClassStub {
     }
 
     public class B {
-        @Test
-        public void outerTestMethod() throws Exception {
-        }
-
         public class C {
             @Test
             public void failingTestMethod() throws Exception {
                 fail("Failing!");
             }
         }
+    }
+
+    @Test
+    public void outerTestMethod() throws Exception {
     }
 }
