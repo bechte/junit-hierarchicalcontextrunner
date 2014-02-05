@@ -86,11 +86,8 @@ public final class ReflectionUtil {
                 outerClass = innerClass;
             }
             return test;
-        } catch (final ReflectiveOperationException e) {
-            if (e instanceof InvocationTargetException)
-                throw ((InvocationTargetException) e).getTargetException();
-            else
-                throw e;
+        } catch (final InvocationTargetException e) {
+            throw ((InvocationTargetException) e).getTargetException();
         }
     }
 }
