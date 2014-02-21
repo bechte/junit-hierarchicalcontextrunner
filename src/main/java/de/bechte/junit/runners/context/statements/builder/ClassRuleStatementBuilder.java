@@ -16,7 +16,6 @@ import java.util.List;
  * annotated members. If no such members exist, the builder will simply return the provided next {@link Statement}.
  */
 public class ClassRuleStatementBuilder implements ClassStatementBuilder {
-    @Override
     public Statement createStatement(final TestClass testClass, final Statement next,
                                      final Description description, final RunNotifier notifier) {
         final List<TestRule> classRules = new ArrayList<TestRule>();

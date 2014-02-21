@@ -28,7 +28,7 @@ public abstract class BooleanValidator implements TestClassValidator {
         public AndValidator(TestClassValidator[] validators) {
             super(validators);
         }
-        @Override
+
         public void validate(final TestClass testClass, final List<Throwable> errors) {
             for (final TestClassValidator validator : validators)
                 validator.validate(testClass, errors);
@@ -40,7 +40,6 @@ public abstract class BooleanValidator implements TestClassValidator {
             super(validators);
         }
 
-        @Override
         public void validate(final TestClass testClass, final List<Throwable> errors) {
             final List<Throwable> tempErrors = new ArrayList<Throwable>();
             final List<Throwable> currentErrors = new ArrayList<Throwable>();

@@ -20,7 +20,6 @@ import static de.bechte.junit.runners.util.ReflectionUtil.getEnclosingInstance;
  * hierarchy levels is skipped and the builder returns the current (or provided) next {@link Statement}.
  */
 public class HierarchicalRunBeforeStatementBuilder implements MethodStatementBuilder {
-    @Override
     public Statement createStatement(final TestClass testClass, final FrameworkMethod method, final Object target,
                                      final Statement next, final Description description, final RunNotifier notifier) {
         Statement statement = next;

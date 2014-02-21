@@ -23,7 +23,6 @@ import static de.bechte.junit.runners.util.ReflectionUtil.getEnclosingInstance;
  * {@link Statement}.
  */
 public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuilder {
-    @Override
     public Statement createStatement(final TestClass testClass, final FrameworkMethod method, final Object target,
                                      final Statement next, final Description description, final RunNotifier notifier) {
         try {

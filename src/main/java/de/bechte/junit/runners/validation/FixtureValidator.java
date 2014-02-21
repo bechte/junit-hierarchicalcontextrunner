@@ -27,7 +27,6 @@ public enum FixtureValidator implements TestClassValidator {
         this.isStatic = isStatic;
     }
 
-    @Override
     public void validate(final TestClass testClass, final List<Throwable> errors) {
         final List<FrameworkMethod> methods = testClass.getAnnotatedMethods(annotationClass);
         for (final FrameworkMethod method : methods) {

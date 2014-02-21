@@ -49,7 +49,6 @@ import java.util.List;
  * of the method {@link #isAllowed(Class)}.
  */
 public class ContextResolver implements ChildResolver<Class<?>> {
-    @Override
     public List<Class<?>> getChildren(final TestClass testClass) {
         if (testClass == null)
             return Collections.emptyList();

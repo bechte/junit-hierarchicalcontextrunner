@@ -16,7 +16,6 @@ import java.util.List;
  * {@link Statement}.
  */
 public class BeforeClassStatementBuilder implements ClassStatementBuilder {
-    @Override
     public Statement createStatement(final TestClass testClass, final Statement next,
                                      final Description description, final RunNotifier notifier) {
         final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);

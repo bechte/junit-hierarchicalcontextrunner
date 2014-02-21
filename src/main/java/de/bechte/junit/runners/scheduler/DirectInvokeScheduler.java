@@ -9,14 +9,12 @@ import org.junit.runners.model.RunnerScheduler;
  * Note: This feature might be go away in future release of JUnit!
  */
 public class DirectInvokeScheduler implements RunnerScheduler {
-    @Override
     public void schedule(final Runnable runnable) {
         if (runnable == null)
             throw new IllegalArgumentException("Runnable must not be null!");
         runnable.run();
     }
 
-    @Override
     public void finished() {
     }
 }

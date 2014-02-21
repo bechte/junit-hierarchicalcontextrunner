@@ -18,7 +18,6 @@ import org.junit.runners.model.TestClass;
  */
 @Deprecated
 public class ExpectExceptionStatementBuilder implements MethodStatementBuilder {
-    @Override
     public Statement createStatement(final TestClass testClass, final FrameworkMethod method, final Object target,
                                      final Statement next, final Description description, final RunNotifier notifier) {
         final Test annotation = method.getAnnotation(Test.class);

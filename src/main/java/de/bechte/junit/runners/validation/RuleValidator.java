@@ -22,7 +22,6 @@ public enum RuleValidator implements TestClassValidator {
         this.validator = validator;
     }
 
-    @Override
     public void validate(final TestClass testClass, final List<Throwable> errors) {
         validator.validate(testClass, errors);
     }

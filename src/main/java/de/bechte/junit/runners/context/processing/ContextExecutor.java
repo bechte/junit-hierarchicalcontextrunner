@@ -21,7 +21,6 @@ public class ContextExecutor implements ChildExecutor<Class<?>> {
         this.statementExecutor = new StatementExecutor();
     }
 
-    @Override
     public void run(final TestClass testClass, final Class<?> clazz, final RunNotifier notifier) {
         try {
             new HierarchicalContextRunner(clazz).run(notifier);

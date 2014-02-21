@@ -13,7 +13,6 @@ import java.util.List;
 public enum ConstructorValidator implements TestClassValidator {
     VALID_CONSTRUCTOR;
 
-    @Override
     public void validate(final TestClass testClass, final List<Throwable> errors) {
         if (!isAllowed(testClass.getJavaClass()))
             return;

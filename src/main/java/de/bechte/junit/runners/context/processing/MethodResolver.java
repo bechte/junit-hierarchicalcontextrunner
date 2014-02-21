@@ -40,7 +40,6 @@ import java.util.List;
  * C or D will return a {@link List} containing only one method each, namely test4, test5 or test6.
  */
 public class MethodResolver implements ChildResolver<FrameworkMethod> {
-    @Override
     public List<FrameworkMethod> getChildren(final TestClass testClass) {
         if (testClass == null)
             return Collections.emptyList();

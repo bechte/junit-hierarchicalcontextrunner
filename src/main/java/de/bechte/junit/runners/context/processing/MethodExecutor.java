@@ -67,7 +67,6 @@ public class MethodExecutor implements ChildExecutor<FrameworkMethod> {
         this.statementBuilders = statementBuilders;
     }
 
-    @Override
     public void run(final TestClass testClass, final FrameworkMethod method, final RunNotifier notifier) {
         final Description description = describer.describe(method);
         if (method.getAnnotation(Ignore.class) != null) {

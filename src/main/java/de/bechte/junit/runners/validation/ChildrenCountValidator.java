@@ -23,7 +23,6 @@ public enum ChildrenCountValidator implements TestClassValidator {
         this.errorMessage = errorMessage;
     }
 
-    @Override
     public void validate(final TestClass testClass, final List<Throwable> errors) {
         if (childResolver.getChildren(testClass).isEmpty())
             errors.add(new Exception(errorMessage));
