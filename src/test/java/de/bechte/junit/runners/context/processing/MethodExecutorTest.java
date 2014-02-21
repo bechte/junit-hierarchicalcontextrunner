@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.internal.runners.statements.Fail;
-import org.junit.internal.runners.statements.InvokeMethod;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
@@ -73,7 +72,7 @@ public class MethodExecutorTest {
         when(methodDescriber.describe(method)).thenReturn(description);
         when(ignoreAnnotation.value()).thenReturn("ignore");
 
-        when(methodStatementBuilder1.createStatement(same(testClass), same(method), anyObject(), any(InvokeMethod.class), same(description), same(notifier))).thenReturn(statement1);
+        when(methodStatementBuilder1.createStatement(same(testClass), same(method), anyObject(), any(Statement.class), same(description), same(notifier))).thenReturn(statement1);
         when(methodStatementBuilder2.createStatement(same(testClass), same(method), anyObject(), same(statement1), same(description), same(notifier))).thenReturn(statement2);
     }
 
@@ -101,8 +100,12 @@ public class MethodExecutorTest {
     public void whenCalledForMethod_statementBuildersAreExecuted() throws Exception {
         methodExecutor.run(testClass, method, notifier);
 
-        verify(statementExecutor).execute(statement2, notifier, description);
-        verifyNoMoreInteractions(statementExecutor);
+        verify(methodStatementBuilder1).createStatement(same(testClass), same(method), any(Object.class), any(Statement.class), same(description), same(notifier));
+        verify(methodStatementBuilder2).createStatement(same(testClass), same(method), any(Object.class), same(statement1), same(description), same(notifier));
+        verify(statementExecutor).execute(same(statement2), same(notifier), same(description));
+
+        verifyNoMoreInteractions(methodStatementBuilder1);
+        verifyNoMoreInteractions(methodStatementBuilder2);
         verifyNoMoreInteractions(notifier);
     }
 

@@ -3,7 +3,6 @@ package de.bechte.junit.runners.context.processing;
 import de.bechte.junit.runners.context.description.Describer;
 import de.bechte.junit.runners.context.statements.StatementExecutor;
 import de.bechte.junit.runners.context.statements.builder.MethodStatementBuilder;
-import de.bechte.junit.runners.util.ReflectionUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
