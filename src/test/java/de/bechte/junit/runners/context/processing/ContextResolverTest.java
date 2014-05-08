@@ -1,10 +1,7 @@
 package de.bechte.junit.runners.context.processing;
 
 import de.bechte.junit.runners.model.TestClassPool;
-import de.bechte.junit.stubs.Class1stLevel;
-import de.bechte.junit.stubs.ContextTestClassStub;
-import de.bechte.junit.stubs.EmptyTestClassStub;
-import de.bechte.junit.stubs.SimpleTestClassStub;
+import de.bechte.junit.stubs.*;
 import org.junit.Test;
 import org.junit.runners.model.TestClass;
 
@@ -50,5 +47,13 @@ public class ContextResolverTest {
         List<Class<?>> children = resolver.getChildren(testClass);
         assertThat(children, hasSize(1));
         assertThat(children, hasItem(Class1stLevel.Class2ndLevel.class));
+    }
+
+    @Test
+    public void verifyThatInheritedSubContextsAreContainedInListOfChildren() throws Exception {
+        TestClass testClass = TestClassPool.forClass(InheritedContextTestClassStub.class);
+        List<Class<?>> children = resolver.getChildren(testClass);
+        assertThat(children, hasSize(3));
+        assertThat(children, hasItems(InheritedContextTestClassStub.A.class, InheritedContextTestClassStub.B.class, InheritedContextTestClassStub.I.class));
     }
 }

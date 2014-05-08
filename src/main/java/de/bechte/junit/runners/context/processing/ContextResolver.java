@@ -53,11 +53,11 @@ public class ContextResolver implements ChildResolver<Class<?>> {
         if (testClass == null)
             return Collections.emptyList();
 
-        final Class<?>[] declaredClasses = testClass.getJavaClass().getDeclaredClasses();
-        final List<Class<?>> contexts = new ArrayList<Class<?>>(declaredClasses.length);
-        for (final Class<?> declaredClass : declaredClasses)
-            if (isAllowed(declaredClass))
-                contexts.add(declaredClass);
+        final Class<?>[] memberClasses = testClass.getJavaClass().getClasses();
+        final List<Class<?>> contexts = new ArrayList<Class<?>>(memberClasses.length);
+        for (final Class<?> memberClass : memberClasses)
+            if (isAllowed(memberClass))
+                contexts.add(memberClass);
         return contexts;
     }
 
