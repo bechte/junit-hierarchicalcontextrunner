@@ -9,11 +9,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 @RunWith(HierarchicalContextRunner.class)
-public class BankTest {
+public class HierarchicalBankTest {
     private static final double MONEY_DELTA = .00001;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClassFirstLevel() throws Exception {
@@ -81,11 +78,20 @@ public class BankTest {
                 public void shouldHaveOldInterestRate() throws Exception {
                     assertMoneyEquals(2.75, oldAccount.getInterestRate());
                 }
+
+                @Test
+                public void newAccountShouldHaveNewInterestRate() throws Exception {
+                    Account newAccount = new Account();
+                    assertMoneyEquals(3.25, newAccount.getInterestRate());
+                }
             }
 
         }
 
         public class FailingAndIgnoredTestContext {
+            @Rule
+            public ExpectedException exception = ExpectedException.none();
+
             @Test
             public void failingTest() throws Exception {
                 fail("I always fail!");
