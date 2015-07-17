@@ -1,5 +1,6 @@
 package de.bechte.junit.runners.context.processing;
 
+import org.junit.Ignore;
 import org.junit.runners.model.TestClass;
 
 import java.lang.reflect.Modifier;
@@ -71,7 +72,7 @@ public class ContextResolver implements ChildResolver<Class<?>> {
      * @return a boolean value
      */
     protected boolean isAllowed(final Class<?> candidate) {
-        return isNotStatic(candidate) && isPublic(candidate);
+        return isNotStatic(candidate) && isPublic(candidate) && isNotIgnored(candidate);
     }
 
     private boolean isNotStatic(Class<?> candidate) {
@@ -80,5 +81,9 @@ public class ContextResolver implements ChildResolver<Class<?>> {
 
     private boolean isPublic(Class<?> candidate) {
         return Modifier.isPublic(candidate.getModifiers());
+    }
+
+    private boolean isNotIgnored(Class<?> candidate) {
+        return candidate.getAnnotation(Ignore.class) == null;
     }
 }
