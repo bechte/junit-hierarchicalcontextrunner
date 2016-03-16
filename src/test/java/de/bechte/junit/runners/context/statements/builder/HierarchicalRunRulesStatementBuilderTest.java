@@ -15,11 +15,11 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 public class HierarchicalRunRulesStatementBuilderTest {
-    private Statement nextStatement = mock(Statement.class);
-
-    private HierarchicalRunRulesStatementBuilder hierarchicalRunRulesStatementBuilder = new HierarchicalRunRulesStatementBuilder();
+    private final Statement nextStatement = mock(Statement.class);
     private final RunNotifier runNotifier = mock(RunNotifier.class);
     private final FrameworkMethod frameworkMethod = mock(FrameworkMethod.class);
+
+    private final HierarchicalRunRulesStatementBuilder hierarchicalRunRulesStatementBuilder = new HierarchicalRunRulesStatementBuilder();
 
     @Test
     public void whenNoRulesArePresentInTestTheNextStatementRemainsUnwrapped() throws Exception {
