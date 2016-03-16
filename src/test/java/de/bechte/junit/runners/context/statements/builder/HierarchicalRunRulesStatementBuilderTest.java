@@ -32,7 +32,11 @@ public class HierarchicalRunRulesStatementBuilderTest {
         Description testDescription = Description.createTestDescription(TestWithTestRuleOnHighestLevel.class, "Test with TestRule");
 
         CapturingTestRuleStub capturingTestRuleStub = new CapturingTestRuleStub();
-        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithTestRuleOnHighestLevel.class), mock(FrameworkMethod.class), new TestWithTestRuleOnHighestLevel(capturingTestRuleStub), nextStatement, testDescription, runNotifier);
+
+        TestWithTestRuleOnHighestLevel outer = new TestWithTestRuleOnHighestLevel(capturingTestRuleStub);
+        Object target = TestWithTestRuleOnHighestLevel.Context.class.getConstructors()[0].newInstance(outer);
+
+        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithTestRuleOnHighestLevel.class), mock(FrameworkMethod.class), target, nextStatement, testDescription, runNotifier);
 
         assertThat(capturingTestRuleStub.getNumberOfApplications(), is(1));
         assertThat(capturingTestRuleStub.getDescriptionApplyWasCalledWith(), is(testDescription));
@@ -66,7 +70,9 @@ public class HierarchicalRunRulesStatementBuilderTest {
         Description testDescription = Description.createTestDescription(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class, "Test with rule that implements both TestRule and MethodRule");
 
         CapturingTestAndMethodRuleStub capturingTestAndMethodRuleStub = new CapturingTestAndMethodRuleStub();
-        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class), frameworkMethod, new TestWithRuleThatImplementsBothTestRuleAndMethodRule(capturingTestAndMethodRuleStub), nextStatement, testDescription, runNotifier);
+        TestWithRuleThatImplementsBothTestRuleAndMethodRule outer = new TestWithRuleThatImplementsBothTestRuleAndMethodRule(capturingTestAndMethodRuleStub);
+        Object target = TestWithRuleThatImplementsBothTestRuleAndMethodRule.Context.class.getConstructors()[0].newInstance(outer);
+        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class), frameworkMethod, target, nextStatement, testDescription, runNotifier);
 
         assertThat(capturingTestAndMethodRuleStub.getNumberOfApplicationsOfTestRulesApplyMethod(), is(1));
         assertThat(capturingTestAndMethodRuleStub.getStatementTestRuleApplyWasCalledWith(), is(nextStatement));
@@ -82,7 +88,9 @@ public class HierarchicalRunRulesStatementBuilderTest {
     @Ignore
     public void methodRuleIsAppliedForEachHierarchy() throws Exception {
         CapturingMethodRuleStub capturingMethodRuleStub = new CapturingMethodRuleStub();
-        hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleAndTwoHierarchies.class), frameworkMethod, new TestWithMethodRuleAndTwoHierarchies(capturingMethodRuleStub), nextStatement, Description.createTestDescription(TestWithMethodRuleAndTwoHierarchies.class, "Test with MethodRule and hierarchies"), runNotifier);
+        TestWithMethodRuleAndTwoHierarchies outer = new TestWithMethodRuleAndTwoHierarchies(capturingMethodRuleStub);
+        Object target = TestWithMethodRuleAndTwoHierarchies.Context.class.getConstructors()[0].newInstance(outer);
+        hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleAndTwoHierarchies.class), frameworkMethod, target, nextStatement, Description.createTestDescription(TestWithMethodRuleAndTwoHierarchies.class, "Test with MethodRule and hierarchies"), runNotifier);
 
         assertThat(capturingMethodRuleStub.getNumberOfApplications(), is(2));
     }
