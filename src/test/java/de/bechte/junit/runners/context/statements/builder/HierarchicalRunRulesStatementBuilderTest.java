@@ -1,5 +1,8 @@
 package de.bechte.junit.runners.context.statements.builder;
 
+import de.bechte.junit.stubs.statements.rules.CapturingMethodRuleStub;
+import de.bechte.junit.stubs.statements.rules.CapturingTestAndMethodRuleStub;
+import de.bechte.junit.stubs.statements.rules.CapturingTestRuleStub;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;

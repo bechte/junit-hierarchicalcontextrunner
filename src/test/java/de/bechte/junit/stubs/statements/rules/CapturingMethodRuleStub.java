@@ -1,4 +1,4 @@
-package de.bechte.junit.runners.context.statements.builder;
+package de.bechte.junit.stubs.statements.rules;
 
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
