@@ -1,7 +1,9 @@
 package de.bechte.junit.runners.context.statements.builder;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.MethodRule;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
@@ -108,6 +110,26 @@ public class HierarchicalRunRulesStatementBuilderTest {
     public class TestWithRuleThatImplementsBothTestRuleAndMethodRule {
         @Rule
         public CapturingTestAndMethodRuleStub rule = capturingTestAndMethodRuleStub;
+
+        public class Context {
+            @Test
+            public void aTest() {
+            }
+        }
+    }
+
+    @Test
+    // refactoring of test is needed first because otherwise this test is found as an outer instance of the JUnit tests used in this test
+    @Ignore
+    public void methodRuleIsAppliedForEachHierarchy() throws Exception {
+        hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleAndTwoHierarchies.class), frameworkMethod, new TestWithMethodRuleAndTwoHierarchies(), nextStatement, Description.createTestDescription(TestWithMethodRuleAndTwoHierarchies.class, "Test with MethodRule and hierarchies"), runNotifier);
+
+        assertThat(capturingMethodRuleStub.getNumberOfApplications(), is(2));
+    }
+
+    public class TestWithMethodRuleAndTwoHierarchies {
+        @Rule
+        public MethodRule rule = capturingMethodRuleStub;
 
         public class Context {
             @Test
