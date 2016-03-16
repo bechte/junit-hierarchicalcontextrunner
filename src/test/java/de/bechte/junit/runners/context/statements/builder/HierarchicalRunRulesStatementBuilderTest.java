@@ -1,7 +1,8 @@
 package de.bechte.junit.runners.context.statements.builder;
 
 import de.bechte.junit.stubs.statements.rules.*;
-import org.junit.Ignore;
+import org.hamcrest.FeatureMatcher;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
@@ -10,7 +11,7 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
 public class HierarchicalRunRulesStatementBuilderTest {
@@ -56,9 +57,9 @@ public class HierarchicalRunRulesStatementBuilderTest {
         Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleOnHighestLevelWithoutInnerContexts.class), frameworkMethod, target, nextStatement, testDescription, runNotifier);
 
         assertThat(capturingMethodRuleStub.getNumberOfApplications(), is(1));
-        assertThat(capturingMethodRuleStub.getTargetApplyWasCalledWith(), is(target));
-        assertThat(capturingMethodRuleStub.getFrameworkMethodApplyWasCalledWith(), is(frameworkMethod));
-        assertThat(capturingMethodRuleStub.getStatementApplyWasCalledWith(), is(nextStatement));
+        assertThat(capturingMethodRuleStub.getApplyInvocationParameters(), contains(targetCalledWith(target)));
+        assertThat(capturingMethodRuleStub.getApplyInvocationParameters(), contains(frameworkMethodCalledWith(frameworkMethod)));
+        assertThat(capturingMethodRuleStub.getApplyInvocationParameters(), contains(statementCalledWith(nextStatement)));
 
         statement.evaluate();
 
@@ -84,15 +85,55 @@ public class HierarchicalRunRulesStatementBuilderTest {
     }
 
     @Test
-    // refactoring of test is needed first because otherwise this test is found as an outer instance of the JUnit tests used in this test
-    @Ignore
-    public void methodRuleIsAppliedForEachHierarchy() throws Exception {
+    public void methodRuleIsAppliedForEachHierarchy() throws Throwable {
         CapturingMethodRuleStub capturingMethodRuleStub = new CapturingMethodRuleStub();
         TestWithMethodRuleAndTwoHierarchies outer = new TestWithMethodRuleAndTwoHierarchies(capturingMethodRuleStub);
         Object target = TestWithMethodRuleAndTwoHierarchies.Context.class.getConstructors()[0].newInstance(outer);
-        hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleAndTwoHierarchies.class), frameworkMethod, target, nextStatement, Description.createTestDescription(TestWithMethodRuleAndTwoHierarchies.class, "Test with MethodRule and hierarchies"), runNotifier);
+        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleAndTwoHierarchies.class), frameworkMethod, target, nextStatement, Description.createTestDescription(TestWithMethodRuleAndTwoHierarchies.class, "Test with MethodRule and hierarchies"), runNotifier);
 
         assertThat(capturingMethodRuleStub.getNumberOfApplications(), is(2));
+        assertThat(capturingMethodRuleStub.getApplyInvocationParameters(), everyItem(frameworkMethodCalledWith(frameworkMethod)));
+        assertThat(capturingMethodRuleStub.getApplyInvocationParameters(), contains(statementCalledWith(nextStatement), statementCalledWith(notNullValue(Statement.class))));
+        assertThat(capturingMethodRuleStub.getApplyInvocationParameters(), contains(targetCalledWith(target), targetCalledWith(instanceOf(TestWithMethodRuleAndTwoHierarchies.class))));
+
+        statement.evaluate();
+
+        assertThat(capturingMethodRuleStub.statementReturnedByRuleApplyMethodWasEvaluated(), is(true));
+    }
+
+    private Matcher<CapturingMethodRuleStub.ApplyInvocationParameter> targetCalledWith(Object target) {
+        return targetCalledWith(equalTo(target));
+    }
+
+    private Matcher<CapturingMethodRuleStub.ApplyInvocationParameter> targetCalledWith(Matcher<Object> submatcher) {
+        return new FeatureMatcher<CapturingMethodRuleStub.ApplyInvocationParameter, Object>(submatcher, "target", "target") {
+            @Override
+            protected Object featureValueOf(CapturingMethodRuleStub.ApplyInvocationParameter actual) {
+                return actual.getTargetApplyWasCalledWith();
+            }
+        };
+    }
+
+    private Matcher<CapturingMethodRuleStub.ApplyInvocationParameter> statementCalledWith(Statement statement) {
+        return statementCalledWith(equalTo(statement));
+    }
+
+    private Matcher<CapturingMethodRuleStub.ApplyInvocationParameter> statementCalledWith(Matcher<Statement> submatcher) {
+        return new FeatureMatcher<CapturingMethodRuleStub.ApplyInvocationParameter, Statement>(submatcher, "statement", "statement") {
+            @Override
+            protected Statement featureValueOf(CapturingMethodRuleStub.ApplyInvocationParameter actual) {
+                return actual.getStatementApplyWasCalledWith();
+            }
+        };
+    }
+
+    private Matcher<CapturingMethodRuleStub.ApplyInvocationParameter> frameworkMethodCalledWith(FrameworkMethod frameworkMethod) {
+        return new FeatureMatcher<CapturingMethodRuleStub.ApplyInvocationParameter, FrameworkMethod>(equalTo(frameworkMethod), "framework method", "method") {
+            @Override
+            protected FrameworkMethod featureValueOf(CapturingMethodRuleStub.ApplyInvocationParameter actual) {
+                return actual.getFrameworkMethodApplyWasCalledWith();
+            }
+        };
     }
 
 }

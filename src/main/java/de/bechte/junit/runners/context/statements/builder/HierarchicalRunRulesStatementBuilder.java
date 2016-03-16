@@ -38,8 +38,11 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
 
             Statement statement = next;
             for (MethodRule methodRule : methodRules)
-                if (!testRules.contains(methodRule))
-                    statement = methodRule.apply(statement, method, target);
+                if (!testRules.contains(methodRule)) {
+                    for (Object instance = target; instance != null; instance = getEnclosingInstance(instance)) {
+                        statement = methodRule.apply(statement, method, instance);
+                    }
+                }
             if (!testRules.isEmpty())
                 statement = new RunRules(statement, testRules, description);
             return statement;
