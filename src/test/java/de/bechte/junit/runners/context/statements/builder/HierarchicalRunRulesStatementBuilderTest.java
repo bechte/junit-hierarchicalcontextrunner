@@ -15,10 +15,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 public class HierarchicalRunRulesStatementBuilderTest {
-
-    private final CapturingTestRuleStub capturingTestRuleStub = new CapturingTestRuleStub();
-    private final CapturingMethodRuleStub capturingMethodRuleStub = new CapturingMethodRuleStub();
-    private CapturingTestAndMethodRuleStub capturingTestAndMethodRuleStub = new CapturingTestAndMethodRuleStub();
     private Statement nextStatement = mock(Statement.class);
 
     private HierarchicalRunRulesStatementBuilder hierarchicalRunRulesStatementBuilder = new HierarchicalRunRulesStatementBuilder();
@@ -44,7 +40,8 @@ public class HierarchicalRunRulesStatementBuilderTest {
     public void whenTestRuleIsPresent() throws Throwable {
         Description testDescription = Description.createTestDescription(TestWithTestRuleOnHighestLevel.class, "Test with TestRule");
 
-        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithTestRuleOnHighestLevel.class), mock(FrameworkMethod.class), new TestWithTestRuleOnHighestLevel(), nextStatement, testDescription, runNotifier);
+        CapturingTestRuleStub capturingTestRuleStub = new CapturingTestRuleStub();
+        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithTestRuleOnHighestLevel.class), mock(FrameworkMethod.class), new TestWithTestRuleOnHighestLevel(capturingTestRuleStub), nextStatement, testDescription, runNotifier);
 
         assertThat(capturingTestRuleStub.getNumberOfApplications(), is(1));
         assertThat(capturingTestRuleStub.getDescriptionApplyWasCalledWith(), is(testDescription));
@@ -57,7 +54,11 @@ public class HierarchicalRunRulesStatementBuilderTest {
 
     public class TestWithTestRuleOnHighestLevel {
         @Rule
-        public CapturingTestRuleStub rule = capturingTestRuleStub;
+        public CapturingTestRuleStub rule;
+
+        public TestWithTestRuleOnHighestLevel(CapturingTestRuleStub capturingTestRuleStub) {
+            rule = capturingTestRuleStub;
+        }
 
         public class Context {
             @Test
@@ -69,8 +70,9 @@ public class HierarchicalRunRulesStatementBuilderTest {
     @Test
     public void methodRuleIsPresentOnHighestLevelAndTestClassHasNoInnerContexts() throws Throwable {
         Description testDescription = Description.createTestDescription(TestWithMethodRuleOnHighestLevelWithoutInnerContexts.class, "Test with MethodRule");
+        CapturingMethodRuleStub capturingMethodRuleStub = new CapturingMethodRuleStub();
 
-        Object target = new TestWithMethodRuleOnHighestLevelWithoutInnerContexts();
+        Object target = new TestWithMethodRuleOnHighestLevelWithoutInnerContexts(capturingMethodRuleStub);
         Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleOnHighestLevelWithoutInnerContexts.class), frameworkMethod, target, nextStatement, testDescription, runNotifier);
 
         assertThat(capturingMethodRuleStub.getNumberOfApplications(), is(1));
@@ -85,7 +87,11 @@ public class HierarchicalRunRulesStatementBuilderTest {
 
     public class TestWithMethodRuleOnHighestLevelWithoutInnerContexts {
         @Rule
-        public CapturingMethodRuleStub rule = capturingMethodRuleStub;
+        public CapturingMethodRuleStub rule;
+
+        public TestWithMethodRuleOnHighestLevelWithoutInnerContexts(CapturingMethodRuleStub capturingMethodRuleStub) {
+            rule = capturingMethodRuleStub;
+        }
 
         @Test
         public void aTest() {
@@ -96,7 +102,8 @@ public class HierarchicalRunRulesStatementBuilderTest {
     public void whenRuleImplementsBothTestRuleAndMethodRule_onlyTestRuleApplyIsExecutedAndOnlyOnce() throws Throwable {
         Description testDescription = Description.createTestDescription(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class, "Test with rule that implements both TestRule and MethodRule");
 
-        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class), frameworkMethod, new TestWithRuleThatImplementsBothTestRuleAndMethodRule(), nextStatement, testDescription, runNotifier);
+        CapturingTestAndMethodRuleStub capturingTestAndMethodRuleStub = new CapturingTestAndMethodRuleStub();
+        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class), frameworkMethod, new TestWithRuleThatImplementsBothTestRuleAndMethodRule(capturingTestAndMethodRuleStub), nextStatement, testDescription, runNotifier);
 
         assertThat(capturingTestAndMethodRuleStub.getNumberOfApplicationsOfTestRulesApplyMethod(), is(1));
         assertThat(capturingTestAndMethodRuleStub.getStatementTestRuleApplyWasCalledWith(), is(nextStatement));
@@ -109,7 +116,11 @@ public class HierarchicalRunRulesStatementBuilderTest {
 
     public class TestWithRuleThatImplementsBothTestRuleAndMethodRule {
         @Rule
-        public CapturingTestAndMethodRuleStub rule = capturingTestAndMethodRuleStub;
+        public CapturingTestAndMethodRuleStub rule;
+
+        public TestWithRuleThatImplementsBothTestRuleAndMethodRule(CapturingTestAndMethodRuleStub capturingTestAndMethodRuleStub) {
+            rule = capturingTestAndMethodRuleStub;
+        }
 
         public class Context {
             @Test
@@ -122,14 +133,19 @@ public class HierarchicalRunRulesStatementBuilderTest {
     // refactoring of test is needed first because otherwise this test is found as an outer instance of the JUnit tests used in this test
     @Ignore
     public void methodRuleIsAppliedForEachHierarchy() throws Exception {
-        hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleAndTwoHierarchies.class), frameworkMethod, new TestWithMethodRuleAndTwoHierarchies(), nextStatement, Description.createTestDescription(TestWithMethodRuleAndTwoHierarchies.class, "Test with MethodRule and hierarchies"), runNotifier);
+        CapturingMethodRuleStub capturingMethodRuleStub = new CapturingMethodRuleStub();
+        hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithMethodRuleAndTwoHierarchies.class), frameworkMethod, new TestWithMethodRuleAndTwoHierarchies(capturingMethodRuleStub), nextStatement, Description.createTestDescription(TestWithMethodRuleAndTwoHierarchies.class, "Test with MethodRule and hierarchies"), runNotifier);
 
         assertThat(capturingMethodRuleStub.getNumberOfApplications(), is(2));
     }
 
     public class TestWithMethodRuleAndTwoHierarchies {
         @Rule
-        public MethodRule rule = capturingMethodRuleStub;
+        public MethodRule rule;
+
+        public TestWithMethodRuleAndTwoHierarchies(CapturingMethodRuleStub capturingMethodRuleStub) {
+            rule = capturingMethodRuleStub;
+        }
 
         public class Context {
             @Test
