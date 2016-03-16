@@ -1,12 +1,8 @@
 package de.bechte.junit.runners.context.statements.builder;
 
-import de.bechte.junit.stubs.statements.rules.CapturingMethodRuleStub;
-import de.bechte.junit.stubs.statements.rules.CapturingTestAndMethodRuleStub;
-import de.bechte.junit.stubs.statements.rules.CapturingTestRuleStub;
+import de.bechte.junit.stubs.statements.rules.*;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.MethodRule;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
@@ -31,14 +27,6 @@ public class HierarchicalRunRulesStatementBuilderTest {
         assertThat(statement, is(nextStatement));
     }
 
-    public class TestWithoutRule {
-        public class Context {
-            @Test
-            public void aTest() {
-            }
-        }
-    }
-
     @Test
     public void whenTestRuleIsPresent() throws Throwable {
         Description testDescription = Description.createTestDescription(TestWithTestRuleOnHighestLevel.class, "Test with TestRule");
@@ -53,21 +41,6 @@ public class HierarchicalRunRulesStatementBuilderTest {
         statement.evaluate();
 
         assertThat(capturingTestRuleStub.statementReturnedByRuleApplyMethodWasEvaluated(), is(true));
-    }
-
-    public class TestWithTestRuleOnHighestLevel {
-        @Rule
-        public CapturingTestRuleStub rule;
-
-        public TestWithTestRuleOnHighestLevel(CapturingTestRuleStub capturingTestRuleStub) {
-            rule = capturingTestRuleStub;
-        }
-
-        public class Context {
-            @Test
-            public void aTest() throws Exception {
-            }
-        }
     }
 
     @Test
@@ -88,19 +61,6 @@ public class HierarchicalRunRulesStatementBuilderTest {
         assertThat(capturingMethodRuleStub.statementReturnedByRuleApplyMethodWasEvaluated(), is(true));
     }
 
-    public class TestWithMethodRuleOnHighestLevelWithoutInnerContexts {
-        @Rule
-        public CapturingMethodRuleStub rule;
-
-        public TestWithMethodRuleOnHighestLevelWithoutInnerContexts(CapturingMethodRuleStub capturingMethodRuleStub) {
-            rule = capturingMethodRuleStub;
-        }
-
-        @Test
-        public void aTest() {
-        }
-    }
-
     @Test
     public void whenRuleImplementsBothTestRuleAndMethodRule_onlyTestRuleApplyIsExecutedAndOnlyOnce() throws Throwable {
         Description testDescription = Description.createTestDescription(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class, "Test with rule that implements both TestRule and MethodRule");
@@ -117,21 +77,6 @@ public class HierarchicalRunRulesStatementBuilderTest {
         assertThat(capturingTestAndMethodRuleStub.statementReturnedByRuleApplyMethodWasEvaluated(), is(true));
     }
 
-    public class TestWithRuleThatImplementsBothTestRuleAndMethodRule {
-        @Rule
-        public CapturingTestAndMethodRuleStub rule;
-
-        public TestWithRuleThatImplementsBothTestRuleAndMethodRule(CapturingTestAndMethodRuleStub capturingTestAndMethodRuleStub) {
-            rule = capturingTestAndMethodRuleStub;
-        }
-
-        public class Context {
-            @Test
-            public void aTest() {
-            }
-        }
-    }
-
     @Test
     // refactoring of test is needed first because otherwise this test is found as an outer instance of the JUnit tests used in this test
     @Ignore
@@ -142,18 +87,4 @@ public class HierarchicalRunRulesStatementBuilderTest {
         assertThat(capturingMethodRuleStub.getNumberOfApplications(), is(2));
     }
 
-    public class TestWithMethodRuleAndTwoHierarchies {
-        @Rule
-        public MethodRule rule;
-
-        public TestWithMethodRuleAndTwoHierarchies(CapturingMethodRuleStub capturingMethodRuleStub) {
-            rule = capturingMethodRuleStub;
-        }
-
-        public class Context {
-            @Test
-            public void aTest() {
-            }
-        }
-    }
 }
