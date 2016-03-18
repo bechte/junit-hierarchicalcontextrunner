@@ -49,6 +49,26 @@ public class HierarchicalRunRulesStatementBuilderTest {
     }
 
     @Test
+    public void testRulesAreNotAppliedForHierarchiesAboveTheirPlaceOfDefinition() throws Throwable {
+        Description testDescription = Description.createTestDescription(TestWithTestRuleOnLowerLevel.class, "Test with TestRule");
+
+        CapturingTestRuleStub capturingTestRuleStub = new CapturingTestRuleStub();
+
+        TestWithTestRuleOnLowerLevel outer = new TestWithTestRuleOnLowerLevel();
+        Object target = TestWithTestRuleOnLowerLevel.Context.class.getConstructors()[0].newInstance(outer, capturingTestRuleStub);
+
+        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithTestRuleOnHighestLevel.class), mock(FrameworkMethod.class), target, nextStatement, testDescription, runNotifier);
+
+        assertThat(capturingTestRuleStub.getNumberOfApplications(), is(1));
+        assertThat(capturingTestRuleStub.getApplyMethodParameters(), contains(descriptionTestRuleApplyWasCalledWith(equalTo(testDescription))));
+        assertThat(capturingTestRuleStub.getApplyMethodParameters(), contains(statementTestRuleApplyWasCalledWith(equalTo(nextStatement))));
+
+        statement.evaluate();
+
+        assertThat(capturingTestRuleStub.statementReturnedByRuleApplyMethodWasEvaluated(), is(true));
+    }
+
+    @Test
     public void methodRuleIsPresentOnHighestLevelAndTestClassHasNoInnerContexts() throws Throwable {
         Description testDescription = Description.createTestDescription(TestWithMethodRuleOnHighestLevelWithoutInnerContexts.class, "Test with MethodRule");
         CapturingMethodRuleStub capturingMethodRuleStub = new CapturingMethodRuleStub();
