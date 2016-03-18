@@ -29,7 +29,7 @@ public class HierarchicalRunRulesStatementBuilderTest {
     }
 
     @Test
-    public void whenTestRuleIsPresent() throws Throwable {
+    public void testRulesAreAppliedForAllHierarchyLevels() throws Throwable {
         Description testDescription = Description.createTestDescription(TestWithTestRuleOnHighestLevel.class, "Test with TestRule");
 
         CapturingTestRuleStub capturingTestRuleStub = new CapturingTestRuleStub();
@@ -39,9 +39,9 @@ public class HierarchicalRunRulesStatementBuilderTest {
 
         Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithTestRuleOnHighestLevel.class), mock(FrameworkMethod.class), target, nextStatement, testDescription, runNotifier);
 
-        assertThat(capturingTestRuleStub.getNumberOfApplications(), is(1));
-        assertThat(capturingTestRuleStub.getDescriptionApplyWasCalledWith(), is(testDescription));
-        assertThat(capturingTestRuleStub.getStatementAppliedWasCalledWith(), is(nextStatement));
+        assertThat(capturingTestRuleStub.getNumberOfApplications(), is(2));
+        assertThat(capturingTestRuleStub.getApplyMethodParameters(), everyItem(descriptionTestRuleApplyWasCalledWith(equalTo(testDescription))));
+        assertThat(capturingTestRuleStub.getApplyMethodParameters(), contains(statementTestRuleApplyWasCalledWith(equalTo(nextStatement)), statementTestRuleApplyWasCalledWith(notNullValue(Statement.class))));
 
         statement.evaluate();
 
@@ -135,4 +135,21 @@ public class HierarchicalRunRulesStatementBuilderTest {
         };
     }
 
+    private Matcher<CapturingTestRuleStub.ApplyMethodParameter> statementTestRuleApplyWasCalledWith(Matcher<Statement> submatcher) {
+        return new FeatureMatcher<CapturingTestRuleStub.ApplyMethodParameter, Statement>(submatcher, "statement", "statement") {
+            @Override
+            protected Statement featureValueOf(CapturingTestRuleStub.ApplyMethodParameter actual) {
+                return actual.getStatementAppliedWasCalledWith();
+            }
+        };
+    }
+
+    private Matcher<CapturingTestRuleStub.ApplyMethodParameter> descriptionTestRuleApplyWasCalledWith(Matcher<Description> submatcher) {
+        return new FeatureMatcher<CapturingTestRuleStub.ApplyMethodParameter, Description>(submatcher, "description", "description") {
+            @Override
+            protected Description featureValueOf(CapturingTestRuleStub.ApplyMethodParameter actual) {
+                return actual.getDescriptionApplyWasCalledWith();
+            }
+        };
+    }
 }

@@ -4,16 +4,17 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class CapturingTestRuleStub implements TestRule {
 
     private int numberOfApplications;
-    private Statement statementAppliedWasCalledWith;
-    private Description descriptionApplyWasCalledWith;
+    private Collection<ApplyMethodParameter> applyMethodParameters = new ArrayList<ApplyMethodParameter>();
     private boolean statementWasEvaluated;
 
     public Statement apply(Statement base, Description description) {
-        statementAppliedWasCalledWith = base;
-        descriptionApplyWasCalledWith = description;
+        applyMethodParameters.add(new ApplyMethodParameter(base, description));
         numberOfApplications++;
         return new Statement() {
             @Override
@@ -27,15 +28,29 @@ public class CapturingTestRuleStub implements TestRule {
         return numberOfApplications;
     }
 
-    public Statement getStatementAppliedWasCalledWith() {
-        return statementAppliedWasCalledWith;
-    }
-
-    public Description getDescriptionApplyWasCalledWith() {
-        return descriptionApplyWasCalledWith;
-    }
-
     public boolean statementReturnedByRuleApplyMethodWasEvaluated() {
         return statementWasEvaluated;
+    }
+
+    public Collection<ApplyMethodParameter> getApplyMethodParameters() {
+        return applyMethodParameters;
+    }
+
+    public class ApplyMethodParameter {
+        private Statement statementAppliedWasCalledWith;
+        private Description descriptionApplyWasCalledWith;
+
+        public ApplyMethodParameter(Statement statementAppliedWasCalledWith, Description descriptionApplyWasCalledWith) {
+            this.statementAppliedWasCalledWith = statementAppliedWasCalledWith;
+            this.descriptionApplyWasCalledWith = descriptionApplyWasCalledWith;
+        }
+
+        public Statement getStatementAppliedWasCalledWith() {
+            return statementAppliedWasCalledWith;
+        }
+
+        public Description getDescriptionApplyWasCalledWith() {
+            return descriptionApplyWasCalledWith;
+        }
     }
 }
