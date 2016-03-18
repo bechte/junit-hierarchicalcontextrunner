@@ -11,9 +11,7 @@ public class TestWithRuleThatImplementsBothTestRuleAndMethodRule {
         rule = capturingTestAndMethodRuleStub;
     }
 
-    public class Context {
-        @Test
-        public void aTest() {
-        }
+    @Test
+    public void aTest() {
     }
 }

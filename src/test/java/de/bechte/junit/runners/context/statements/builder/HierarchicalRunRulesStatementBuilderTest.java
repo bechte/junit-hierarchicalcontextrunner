@@ -67,12 +67,11 @@ public class HierarchicalRunRulesStatementBuilderTest {
     }
 
     @Test
-    public void whenRuleImplementsBothTestRuleAndMethodRule_onlyTestRuleApplyIsExecutedAndOnlyOnce() throws Throwable {
+    public void whenRuleImplementsBothTestRuleAndMethodRule_onlyTestRuleApplyIsExecuted() throws Throwable {
         Description testDescription = Description.createTestDescription(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class, "Test with rule that implements both TestRule and MethodRule");
 
         CapturingTestAndMethodRuleStub capturingTestAndMethodRuleStub = new CapturingTestAndMethodRuleStub();
-        TestWithRuleThatImplementsBothTestRuleAndMethodRule outer = new TestWithRuleThatImplementsBothTestRuleAndMethodRule(capturingTestAndMethodRuleStub);
-        Object target = TestWithRuleThatImplementsBothTestRuleAndMethodRule.Context.class.getConstructors()[0].newInstance(outer);
+        Object target = new TestWithRuleThatImplementsBothTestRuleAndMethodRule(capturingTestAndMethodRuleStub);
         Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithRuleThatImplementsBothTestRuleAndMethodRule.class), frameworkMethod, target, nextStatement, testDescription, runNotifier);
 
         assertThat(capturingTestAndMethodRuleStub.getNumberOfApplicationsOfTestRulesApplyMethod(), is(1));
