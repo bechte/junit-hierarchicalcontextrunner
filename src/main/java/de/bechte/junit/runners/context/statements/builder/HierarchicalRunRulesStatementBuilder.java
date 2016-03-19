@@ -27,7 +27,7 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
     public Statement createStatement(final TestClass testClass, final FrameworkMethod method, final Object target,
                                      final Statement next, final Description description, final RunNotifier notifier) {
         try {
-            final TestRuleDefinitions testRules = new TestRuleDefinitions(hierarchyInstancesInAscendingOrder(target));
+            final TestRuleDefinitions testRules = new TestRuleDefinitions(hierarchyOfTestsFromLowestToHighest(target));
             final List<MethodRule> methodRules = new LinkedList<MethodRule>();
 
 
@@ -45,7 +45,7 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
                         statement = methodRule.apply(statement, method, instance);
                     }
                 if (testRules.hasSome())
-                    statement = new RunRules(statement, testRules.getTestRulesDefinedForThisHieraryLevel(instance), description);
+                    statement = new RunRules(statement, testRules.getTestRulesDefinedForThisHierarchyLevel(instance), description);
             }
             return statement;
         } catch (final IllegalAccessException e) {
@@ -53,7 +53,7 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
         }
     }
 
-    private List<Object> hierarchyInstancesInAscendingOrder(Object target) throws IllegalAccessException {
+    private List<Object> hierarchyOfTestsFromLowestToHighest(Object target) throws IllegalAccessException {
         List<Object> result = new ArrayList<Object>();
         for (Object instance = target; instance != null; instance = getEnclosingInstance(instance)) {
             result.add(instance);
@@ -61,18 +61,26 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
         return result;
     }
 
-    private class TestRuleWithInstance {
+    private class TestRuleInTestHierarchy {
         private TestRule testRule;
-        private Object instance;
+        private Object objectRepresentingHierarchy;
 
-        public TestRuleWithInstance(TestRule testRule, Object instance) {
+        public TestRuleInTestHierarchy(TestRule testRule, Object objectRepresentingHierarchy) {
             this.testRule = testRule;
-            this.instance = instance;
+            this.objectRepresentingHierarchy = objectRepresentingHierarchy;
+        }
+
+        public TestRule getTestRule() {
+            return testRule;
+        }
+
+        public Object getObjectRepresentingHierarchyLevel() {
+            return objectRepresentingHierarchy;
         }
     }
 
     private class TestRuleDefinitions {
-        private List<TestRuleWithInstance> testRulePositionInTestHierarchies = new ArrayList<TestRuleWithInstance>();
+        private List<TestRuleInTestHierarchy> testRulePositionInTestHierarchies = new ArrayList<TestRuleInTestHierarchy>();
         private List<Object> hierarchyOfTestsFromLowestToHighest;
 
         public TestRuleDefinitions(List<Object> hierarchyOfTestsFromLowestToHighest) {
@@ -80,8 +88,8 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
         }
 
         public boolean contains(MethodRule methodRule) {
-            for (TestRuleWithInstance t : testRulePositionInTestHierarchies) {
-                if (t.testRule.equals(methodRule))
+            for (TestRuleInTestHierarchy t : testRulePositionInTestHierarchies) {
+                if (t.getTestRule().equals(methodRule))
                     return true;
             }
             return false;
@@ -89,18 +97,18 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
 
         public void addAll(List<TestRule> testRules, Object instance) {
             for (TestRule testRule : testRules)
-                testRulePositionInTestHierarchies.add(new TestRuleWithInstance(testRule, instance));
+                testRulePositionInTestHierarchies.add(new TestRuleInTestHierarchy(testRule, instance));
         }
 
         public boolean hasSome() {
             return !testRulePositionInTestHierarchies.isEmpty();
         }
 
-        public Iterable<TestRule> getTestRulesDefinedForThisHieraryLevel(Object instance) {
+        public Iterable<TestRule> getTestRulesDefinedForThisHierarchyLevel(Object instance) {
             List<TestRule> result = new ArrayList<TestRule>();
-            for (TestRuleWithInstance t : testRulePositionInTestHierarchies)
-                if (hierarchyOfTestsFromLowestToHighest.indexOf(t.instance) >= hierarchyOfTestsFromLowestToHighest.indexOf(instance))
-                    result.add(t.testRule);
+            for (TestRuleInTestHierarchy testRulePosition : testRulePositionInTestHierarchies)
+                if (hierarchyOfTestsFromLowestToHighest.indexOf(testRulePosition.getObjectRepresentingHierarchyLevel()) >= hierarchyOfTestsFromLowestToHighest.indexOf(instance))
+                    result.add(testRulePosition.getTestRule());
             return result;
         }
     }
