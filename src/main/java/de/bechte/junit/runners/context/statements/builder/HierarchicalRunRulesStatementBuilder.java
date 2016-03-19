@@ -1,5 +1,6 @@
 package de.bechte.junit.runners.context.statements.builder;
 
+import de.bechte.junit.runners.context.statements.builder.rules.TestRuleDefinitions;
 import de.bechte.junit.runners.model.TestClassPool;
 import org.junit.Rule;
 import org.junit.internal.runners.statements.Fail;
@@ -61,55 +62,4 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
         return result;
     }
 
-    private class TestRuleInTestHierarchy {
-        private TestRule testRule;
-        private Object objectRepresentingHierarchy;
-
-        public TestRuleInTestHierarchy(TestRule testRule, Object objectRepresentingHierarchy) {
-            this.testRule = testRule;
-            this.objectRepresentingHierarchy = objectRepresentingHierarchy;
-        }
-
-        public TestRule getTestRule() {
-            return testRule;
-        }
-
-        public Object getObjectRepresentingHierarchyLevel() {
-            return objectRepresentingHierarchy;
-        }
-    }
-
-    private class TestRuleDefinitions {
-        private List<TestRuleInTestHierarchy> testRulePositionInTestHierarchies = new ArrayList<TestRuleInTestHierarchy>();
-        private List<Object> hierarchyOfTestsFromLowestToHighest;
-
-        public TestRuleDefinitions(List<Object> hierarchyOfTestsFromLowestToHighest) {
-            this.hierarchyOfTestsFromLowestToHighest = hierarchyOfTestsFromLowestToHighest;
-        }
-
-        public boolean contains(MethodRule methodRule) {
-            for (TestRuleInTestHierarchy t : testRulePositionInTestHierarchies) {
-                if (t.getTestRule().equals(methodRule))
-                    return true;
-            }
-            return false;
-        }
-
-        public void addAll(List<TestRule> testRules, Object instance) {
-            for (TestRule testRule : testRules)
-                testRulePositionInTestHierarchies.add(new TestRuleInTestHierarchy(testRule, instance));
-        }
-
-        public boolean hasSome() {
-            return !testRulePositionInTestHierarchies.isEmpty();
-        }
-
-        public Iterable<TestRule> getTestRulesDefinedForThisHierarchyLevel(Object instance) {
-            List<TestRule> result = new ArrayList<TestRule>();
-            for (TestRuleInTestHierarchy testRulePosition : testRulePositionInTestHierarchies)
-                if (hierarchyOfTestsFromLowestToHighest.indexOf(testRulePosition.getObjectRepresentingHierarchyLevel()) >= hierarchyOfTestsFromLowestToHighest.indexOf(instance))
-                    result.add(testRulePosition.getTestRule());
-            return result;
-        }
-    }
 }
