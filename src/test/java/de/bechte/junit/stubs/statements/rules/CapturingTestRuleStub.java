@@ -5,12 +5,12 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 public class CapturingTestRuleStub implements TestRule {
 
     private int numberOfApplications;
-    private Collection<ApplyMethodParameter> applyMethodParameters = new ArrayList<ApplyMethodParameter>();
+    private List<ApplyMethodParameter> applyMethodParameters = new ArrayList<ApplyMethodParameter>();
     private boolean statementWasEvaluated;
 
     public Statement apply(Statement base, Description description) {
@@ -32,7 +32,7 @@ public class CapturingTestRuleStub implements TestRule {
         return statementWasEvaluated;
     }
 
-    public Collection<ApplyMethodParameter> getApplyMethodParameters() {
+    public List<ApplyMethodParameter> getApplyMethodParameters() {
         return applyMethodParameters;
     }
 

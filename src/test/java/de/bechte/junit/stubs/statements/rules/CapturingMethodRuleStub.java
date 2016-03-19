@@ -5,12 +5,12 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 public class CapturingMethodRuleStub implements MethodRule {
     private int numberOfApplications;
     private boolean statementWasEvaluated;
-    private Collection<ApplyInvocationParameter> applyInvocationParameters = new ArrayList<ApplyInvocationParameter>();
+    private List<ApplyInvocationParameter> applyInvocationParameters = new ArrayList<ApplyInvocationParameter>();
 
     public Statement apply(Statement base, FrameworkMethod method, Object target) {
         applyInvocationParameters.add(new ApplyInvocationParameter(base, method, target));
@@ -31,7 +31,7 @@ public class CapturingMethodRuleStub implements MethodRule {
         return statementWasEvaluated;
     }
 
-    public Collection<ApplyInvocationParameter> getApplyInvocationParameters() {
+    public List<ApplyInvocationParameter> getApplyInvocationParameters() {
         return applyInvocationParameters;
     }
 
