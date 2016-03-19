@@ -27,10 +27,9 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
     public Statement createStatement(final TestClass testClass, final FrameworkMethod method, final Object target,
                                      final Statement next, final Description description, final RunNotifier notifier) {
         try {
-            final TestRuleDefinitions testRules = new TestRuleDefinitions();
+            final TestRuleDefinitions testRules = new TestRuleDefinitions(hierarchyInstancesInAscendingOrder(target));
             final List<MethodRule> methodRules = new LinkedList<MethodRule>();
 
-            List<Object> hierarchyInstancesInAscendingOrder = hierarchyInstancesInAscendingOrder(target);
 
             for (Object instance = target; instance != null; instance = getEnclosingInstance(instance)) {
                 final TestClass instanceTestClass = TestClassPool.forClass(instance.getClass());
@@ -46,7 +45,7 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
                         statement = methodRule.apply(statement, method, instance);
                     }
                 if (testRules.hasSome())
-                    statement = new RunRules(statement, testRules.getTestRulesDefinedForThisHieraryLevel(hierarchyInstancesInAscendingOrder, instance), description);
+                    statement = new RunRules(statement, testRules.getTestRulesDefinedForThisHieraryLevel(instance), description);
             }
             return statement;
         } catch (final IllegalAccessException e) {
@@ -73,10 +72,15 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
     }
 
     private class TestRuleDefinitions {
-        private List<TestRuleWithInstance> testRuleWithInstances = new ArrayList<TestRuleWithInstance>();
+        private List<TestRuleWithInstance> testRulePositionInTestHierarchies = new ArrayList<TestRuleWithInstance>();
+        private List<Object> hierarchyOfTestsFromLowestToHighest;
+
+        public TestRuleDefinitions(List<Object> hierarchyOfTestsFromLowestToHighest) {
+            this.hierarchyOfTestsFromLowestToHighest = hierarchyOfTestsFromLowestToHighest;
+        }
 
         public boolean contains(MethodRule methodRule) {
-            for (TestRuleWithInstance t : testRuleWithInstances) {
+            for (TestRuleWithInstance t : testRulePositionInTestHierarchies) {
                 if (t.testRule.equals(methodRule))
                     return true;
             }
@@ -85,17 +89,17 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
 
         public void addAll(List<TestRule> testRules, Object instance) {
             for (TestRule testRule : testRules)
-                testRuleWithInstances.add(new TestRuleWithInstance(testRule, instance));
+                testRulePositionInTestHierarchies.add(new TestRuleWithInstance(testRule, instance));
         }
 
         public boolean hasSome() {
-            return !testRuleWithInstances.isEmpty();
+            return !testRulePositionInTestHierarchies.isEmpty();
         }
 
-        public Iterable<TestRule> getTestRulesDefinedForThisHieraryLevel(List<Object> hierarchyInstancesInAscendingOrder, Object instance) {
+        public Iterable<TestRule> getTestRulesDefinedForThisHieraryLevel(Object instance) {
             List<TestRule> result = new ArrayList<TestRule>();
-            for (TestRuleWithInstance t : testRuleWithInstances)
-                if (hierarchyInstancesInAscendingOrder.indexOf(t.instance) >= hierarchyInstancesInAscendingOrder.indexOf(instance))
+            for (TestRuleWithInstance t : testRulePositionInTestHierarchies)
+                if (hierarchyOfTestsFromLowestToHighest.indexOf(t.instance) >= hierarchyOfTestsFromLowestToHighest.indexOf(instance))
                     result.add(t.testRule);
             return result;
         }
