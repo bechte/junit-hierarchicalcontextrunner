@@ -43,10 +43,6 @@ public class CapturingTestAndMethodRuleStub implements TestRule, MethodRule {
         return descriptionTestRuleApplyWasCalledWith;
     }
 
-    public void setDescriptionTestRuleApplyWasCalledWith(Description descriptionTestRuleApplyWasCalledWith) {
-        this.descriptionTestRuleApplyWasCalledWith = descriptionTestRuleApplyWasCalledWith;
-    }
-
     public boolean statementReturnedByRuleApplyMethodWasEvaluated() {
         return statementWasEvaluated;
     }
