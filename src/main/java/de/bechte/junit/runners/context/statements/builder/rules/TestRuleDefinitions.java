@@ -27,7 +27,7 @@ public class TestRuleDefinitions {
             testRulePositionInTestHierarchies.add(new TestRuleInTestHierarchy(testRule, instance));
     }
 
-    public boolean hasSome() {
+    public boolean notEmpty() {
         return !testRulePositionInTestHierarchies.isEmpty();
     }
 
