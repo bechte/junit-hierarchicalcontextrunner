@@ -14,7 +14,6 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static de.bechte.junit.runners.util.ReflectionUtil.getEnclosingInstance;
@@ -29,23 +28,20 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
                                      final Statement next, final Description description, final RunNotifier notifier) {
         try {
             final TestRuleDefinitions testRules = new TestRuleDefinitions(hierarchyOfTestsFromLowestToHighest(target));
-            final List<MethodRule> methodRules = new LinkedList<MethodRule>();
-
-
             for (Object instance = target; instance != null; instance = getEnclosingInstance(instance)) {
                 final TestClass instanceTestClass = TestClassPool.forClass(instance.getClass());
-                testRules.addAll(instanceTestClass.getAnnotatedMethodValues(instance, Rule.class, TestRule.class), instance);
-                testRules.addAll(instanceTestClass.getAnnotatedFieldValues(instance, Rule.class, TestRule.class), instance);
-                methodRules.addAll(instanceTestClass.getAnnotatedFieldValues(instance, Rule.class, MethodRule.class));
+                testRules.addTestRules(instanceTestClass.getAnnotatedMethodValues(instance, Rule.class, TestRule.class), instance);
+                testRules.addTestRules(instanceTestClass.getAnnotatedFieldValues(instance, Rule.class, TestRule.class), instance);
+                testRules.addMethodRules(instanceTestClass.getAnnotatedFieldValues(instance, Rule.class, MethodRule.class), instance);
             }
 
             Statement statement = next;
             for (Object hierarchyContext = target; hierarchyContext != null; hierarchyContext = getEnclosingInstance(hierarchyContext)) {
-                for (MethodRule methodRule : methodRules)
+                for (MethodRule methodRule : testRules.getMethodRulesDefinedForThisHierarchyLevel(hierarchyContext))
                     if (!testRules.contains(methodRule)) {
                         statement = methodRule.apply(statement, method, hierarchyContext);
                     }
-                if (testRules.notEmpty())
+                if (testRules.testRulesPresent())
                     statement = new RunRules(statement, testRules.getTestRulesDefinedForThisHierarchyLevel(hierarchyContext), description);
             }
             return statement;

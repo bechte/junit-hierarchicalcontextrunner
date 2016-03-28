@@ -120,6 +120,26 @@ public class HierarchicalRunRulesStatementBuilderTest {
         assertThat(capturingMethodRuleStub.statementReturnedByRuleApplyMethodWasEvaluated(), is(true));
     }
 
+    @Test
+    public void methodRulesAreNotAppliedForHierarchiesAboveTheirPlaceOfDefinition() throws Throwable {
+        Description testDescription = Description.createTestDescription(TestWithMethodRuleOnLowerLevel.class, "Test with TestRule");
+
+        CapturingMethodRuleStub capturingMethodRuleStub = new CapturingMethodRuleStub();
+
+        TestWithMethodRuleOnLowerLevel outer = new TestWithMethodRuleOnLowerLevel();
+        Object target = TestWithMethodRuleOnLowerLevel.Context.class.getConstructors()[0].newInstance(outer, capturingMethodRuleStub);
+
+        Statement statement = hierarchicalRunRulesStatementBuilder.createStatement(new TestClass(TestWithTestRuleOnHighestLevel.class), mock(FrameworkMethod.class), target, nextStatement, testDescription, runNotifier);
+
+        assertThat(capturingMethodRuleStub.getNumberOfApplications(), is(1));
+        assertThat(capturingMethodRuleStub.getApplyInvocationParameters(), contains(statementCalledWith(equalTo(nextStatement))));
+        assertThat(capturingMethodRuleStub.getApplyInvocationParameters(), contains(targetCalledWith(target)));
+
+        statement.evaluate();
+
+        assertThat(capturingMethodRuleStub.statementReturnedByRuleApplyMethodWasEvaluated(), is(true));
+    }
+
     private Matcher<CapturingMethodRuleStub.ApplyInvocationParameter> targetCalledWith(Object target) {
         return targetCalledWith(equalTo(target));
     }

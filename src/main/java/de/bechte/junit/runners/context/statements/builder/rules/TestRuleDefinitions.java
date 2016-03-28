@@ -8,6 +8,7 @@ import java.util.List;
 
 public class TestRuleDefinitions {
     private List<TestRuleInTestHierarchy> testRulePositionInTestHierarchies = new ArrayList<TestRuleInTestHierarchy>();
+    private List<MethodRuleInTestHierarchy> methodRulePositionInTestHierarchies = new ArrayList<MethodRuleInTestHierarchy>();
     private List<Object> hierarchyOfTestsFromLowestToHighest;
 
     public TestRuleDefinitions(List<Object> hierarchyOfTestsFromLowestToHighest) {
@@ -22,12 +23,17 @@ public class TestRuleDefinitions {
         return false;
     }
 
-    public void addAll(List<TestRule> testRules, Object instance) {
+    public void addTestRules(List<TestRule> testRules, Object instance) {
         for (TestRule testRule : testRules)
             testRulePositionInTestHierarchies.add(new TestRuleInTestHierarchy(testRule, instance));
     }
 
-    public boolean notEmpty() {
+    public void addMethodRules(List<MethodRule> annotatedFieldValues, Object instance) {
+        for (MethodRule methodRule : annotatedFieldValues)
+            methodRulePositionInTestHierarchies.add(new MethodRuleInTestHierarchy(methodRule, instance));
+    }
+
+    public boolean testRulesPresent() {
         return !testRulePositionInTestHierarchies.isEmpty();
     }
 
@@ -36,6 +42,14 @@ public class TestRuleDefinitions {
         for (TestRuleInTestHierarchy testRulePosition : testRulePositionInTestHierarchies)
             if (hierarchyOfTestsFromLowestToHighest.indexOf(testRulePosition.getObjectRepresentingHierarchyLevel()) >= hierarchyOfTestsFromLowestToHighest.indexOf(instance))
                 result.add(testRulePosition.getTestRule());
+        return result;
+    }
+
+    public List<MethodRule> getMethodRulesDefinedForThisHierarchyLevel(Object hierarchyContext) {
+        List<MethodRule> result = new ArrayList<MethodRule>();
+        for (MethodRuleInTestHierarchy testRulePosition : methodRulePositionInTestHierarchies)
+            if (hierarchyOfTestsFromLowestToHighest.indexOf(testRulePosition.getObjectRepresentingHierarchyLevel()) >= hierarchyOfTestsFromLowestToHighest.indexOf(hierarchyContext))
+                result.add(testRulePosition.getMethodRule());
         return result;
     }
 }
