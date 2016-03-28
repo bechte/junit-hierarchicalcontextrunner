@@ -40,13 +40,13 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
             }
 
             Statement statement = next;
-            for (Object instance = target; instance != null; instance = getEnclosingInstance(instance)) {
+            for (Object hierarchyContext = target; hierarchyContext != null; hierarchyContext = getEnclosingInstance(hierarchyContext)) {
                 for (MethodRule methodRule : methodRules)
                     if (!testRules.contains(methodRule)) {
-                        statement = methodRule.apply(statement, method, instance);
+                        statement = methodRule.apply(statement, method, hierarchyContext);
                     }
                 if (testRules.notEmpty())
-                    statement = new RunRules(statement, testRules.getTestRulesDefinedForThisHierarchyLevel(instance), description);
+                    statement = new RunRules(statement, testRules.getTestRulesDefinedForThisHierarchyLevel(hierarchyContext), description);
             }
             return statement;
         } catch (final IllegalAccessException e) {
