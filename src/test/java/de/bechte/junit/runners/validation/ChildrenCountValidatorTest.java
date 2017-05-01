@@ -8,6 +8,8 @@ import org.junit.runners.model.TestClass;
 import java.util.ArrayList;
 import java.util.List;
 
+import static de.bechte.junit.matchers.CollectionMatchers.empty;
+import static de.bechte.junit.matchers.CollectionMatchers.hasSize;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 

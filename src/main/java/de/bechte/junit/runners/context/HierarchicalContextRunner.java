@@ -88,9 +88,7 @@ public class HierarchicalContextRunner extends Runner {
                 FixtureValidator.AFTER_METHODS,
                 FixtureValidator.TEST_METHODS,
                 RuleValidator.CLASS_RULE_VALIDATOR,
-                RuleValidator.CLASS_RULE_METHOD_VALIDATOR,
-                RuleValidator.RULE_VALIDATOR,
-                RuleValidator.RULE_METHOD_VALIDATOR
+                RuleValidator.RULE_VALIDATOR
         );
     }
 

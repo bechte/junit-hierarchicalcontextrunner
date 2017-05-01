@@ -37,27 +37,16 @@ public class ClassRuleStatementBuilderTest {
 
     @Test
     public void givenTestClassWithoutRuleAnnotations_returnsNextStatement() throws Exception {
-        when(testClass.getAnnotatedMethodValues(null, ClassRule.class, TestRule.class)).thenReturn(Collections.EMPTY_LIST);
-        when(testClass.getAnnotatedFieldValues(null, ClassRule.class, TestRule.class)).thenReturn(Collections.EMPTY_LIST);
+        when(testClass.getAnnotatedFieldValues(null, ClassRule.class, TestRule.class))
+                .thenReturn(Collections.<TestRule>emptyList());
 
         Statement statement = builder.createStatement(testClass, next, description, notifier);
         assertThat(statement, is(equalTo(next)));
     }
 
     @Test
-    public void givenTestClassWithRuleAnnotatedMethods_returnsRunRulesStatement() throws Exception {
-        List<TestRule> methods = Arrays.asList(rule1, rule2);
-        when(testClass.getAnnotatedMethodValues(null, ClassRule.class, TestRule.class)).thenReturn(methods);
-        when(testClass.getAnnotatedFieldValues(null, ClassRule.class, TestRule.class)).thenReturn(Collections.EMPTY_LIST);
-
-        Statement actual = builder.createStatement(testClass, next, description, notifier);
-        assertThat(actual, is(instanceOf(RunRules.class)));
-    }
-
-    @Test
     public void givenTestClassWithRuleAnnotatedFields_returnsRunRulesStatement() throws Exception {
         List<TestRule> fields = Arrays.asList(rule1, rule2);
-        when(testClass.getAnnotatedMethodValues(null, ClassRule.class, TestRule.class)).thenReturn(Collections.EMPTY_LIST);
         when(testClass.getAnnotatedFieldValues(null, ClassRule.class, TestRule.class)).thenReturn(fields);
 
         Statement actual = builder.createStatement(testClass, next, description, notifier);
@@ -66,9 +55,7 @@ public class ClassRuleStatementBuilderTest {
 
     @Test
     public void givenTestClassWithRuleAnnotatedMethodsAndFields_returnsRunRulesStatement() throws Exception {
-        List<TestRule> methods = Arrays.asList(rule1);
-        List<TestRule> fields = Arrays.asList(rule2);
-        when(testClass.getAnnotatedMethodValues(null, ClassRule.class, TestRule.class)).thenReturn(methods);
+        List<TestRule> fields = Collections.singletonList(rule2);
         when(testClass.getAnnotatedFieldValues(null, ClassRule.class, TestRule.class)).thenReturn(fields);
 
         Statement actual = builder.createStatement(testClass, next, description, notifier);

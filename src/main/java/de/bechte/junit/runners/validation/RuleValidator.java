@@ -12,9 +12,7 @@ import java.util.List;
  */
 public enum RuleValidator implements TestClassValidator {
     CLASS_RULE_VALIDATOR(RuleFieldValidator.CLASS_RULE_VALIDATOR),
-    RULE_VALIDATOR(RuleFieldValidator.RULE_VALIDATOR),
-    CLASS_RULE_METHOD_VALIDATOR(RuleFieldValidator.CLASS_RULE_METHOD_VALIDATOR),
-    RULE_METHOD_VALIDATOR(RuleFieldValidator.RULE_METHOD_VALIDATOR);
+    RULE_VALIDATOR(RuleFieldValidator.RULE_VALIDATOR);
 
     private final RuleFieldValidator validator;
 

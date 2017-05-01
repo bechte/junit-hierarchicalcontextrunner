@@ -31,7 +31,6 @@ public class HierarchicalRunRulesStatementBuilder implements MethodStatementBuil
 
             for (Object instance = target; instance != null; instance = getEnclosingInstance(instance)) {
                 final TestClass instanceTestClass = TestClassPool.forClass(instance.getClass());
-                testRules.addAll(instanceTestClass.getAnnotatedMethodValues(instance, Rule.class, TestRule.class));
                 testRules.addAll(instanceTestClass.getAnnotatedFieldValues(instance, Rule.class, TestRule.class));
                 methodRules.addAll(instanceTestClass.getAnnotatedFieldValues(instance, Rule.class, MethodRule.class));
             }

@@ -7,6 +7,8 @@ import org.junit.runners.model.TestClass;
 
 import java.util.List;
 
+import static de.bechte.junit.matchers.CollectionMatchers.empty;
+import static de.bechte.junit.matchers.CollectionMatchers.hasSize;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -46,7 +48,8 @@ public class ContextResolverTest {
         TestClass testClass = TestClassPool.forClass(Class1stLevel.class);
         List<Class<?>> children = resolver.getChildren(testClass);
         assertThat(children, hasSize(1));
-        assertThat(children, hasItem(Class1stLevel.Class2ndLevel.class));
+        // java is not recognizing that List implements Iterable in this case
+        assertThat((Iterable)children, hasItem(Class1stLevel.Class2ndLevel.class));
     }
 
     @Test

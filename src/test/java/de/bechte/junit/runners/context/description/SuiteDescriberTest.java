@@ -14,6 +14,7 @@ import org.junit.runners.model.TestClass;
 import java.util.Arrays;
 import java.util.List;
 
+import static de.bechte.junit.matchers.CollectionMatchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;

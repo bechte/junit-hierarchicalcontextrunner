@@ -12,9 +12,12 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
+import static de.bechte.junit.matchers.CollectionMatchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.same;
@@ -50,7 +53,7 @@ public class ContextDescriberTest {
     @Test
     public void whenDescribeIsCalled_descriptionHasTheCorrectTestClass() throws Exception {
         Description description = describer.describe(contextTestClass);
-        assertThat((Class) description.getTestClass(), is(equalTo(contextTestClass)));
+        assertThat(description.getTestClass(), is(equalTo(contextTestClass)));
     }
 
     @Test
@@ -80,7 +83,7 @@ public class ContextDescriberTest {
         TestClass testClass = TestClassPool.forClass(ContextTestClassStub.class);
         when(contextResolver.getChildren(testClass)).thenReturn(contexts);
 
-        when(methodResolver.getChildren(testClass)).thenReturn(Arrays.asList(outerTestMethod));
+        when(methodResolver.getChildren(testClass)).thenReturn(Collections.singletonList(outerTestMethod));
         when(methodDescriber.describe(outerTestMethod)).thenReturn(descriptionOuterTestMethod);
 
         Description description = spiedDescriber.describe(ContextTestClassStub.class);

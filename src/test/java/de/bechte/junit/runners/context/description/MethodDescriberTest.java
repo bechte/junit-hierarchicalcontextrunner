@@ -1,6 +1,7 @@
 package de.bechte.junit.runners.context.description;
 
 import de.bechte.junit.stubs.SimpleTestClassStub;
+import de.bechte.junit.matchers.CollectionMatchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -8,7 +9,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
 
-import static org.hamcrest.Matchers.*;
+import static de.bechte.junit.matchers.CollectionMatchers.emptyCollectionOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class MethodDescriberTest {
@@ -53,7 +56,7 @@ public class MethodDescriberTest {
     @Test
     public void givenValidMethod_descriptionHasTheCorrectTestClass() throws Exception {
         Description description = describer.describe(testMethod);
-        assertThat((Class) description.getTestClass(), is(equalTo(simpleTestClass)));
+        assertThat(description.getTestClass(), is(equalTo(simpleTestClass)));
     }
 
     @Test
@@ -71,6 +74,6 @@ public class MethodDescriberTest {
     @Test
     public void givenValidMethod_descriptionHasTheCorrectAnnotations() throws Exception {
         Description description = describer.describe(testMethod);
-        assertThat(description.getAnnotations(), containsInAnyOrder(testMethod.getAnnotations()));
+        assertThat(description.getAnnotations(), CollectionMatchers.containsInAnyOrder(testMethod.getAnnotations()));
     }
 }

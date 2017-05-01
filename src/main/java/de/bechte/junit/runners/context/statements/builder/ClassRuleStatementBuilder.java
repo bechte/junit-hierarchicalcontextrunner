@@ -19,7 +19,6 @@ public class ClassRuleStatementBuilder implements ClassStatementBuilder {
     public Statement createStatement(final TestClass testClass, final Statement next,
                                      final Description description, final RunNotifier notifier) {
         final List<TestRule> classRules = new ArrayList<TestRule>();
-        classRules.addAll(testClass.getAnnotatedMethodValues(null, ClassRule.class, TestRule.class));
         classRules.addAll(testClass.getAnnotatedFieldValues(null, ClassRule.class, TestRule.class));
         return classRules.isEmpty() ? next : new RunRules(next, classRules, description);
     }
