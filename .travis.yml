@@ -1,2 +1,10 @@
 language: java
-
+jdk:
+  - openjdk7
+jobs:
+  include:
+    - stage: test
+      if: branch != master
+    - stage: release
+      if: branch = master
+      script: mvn -B release:prepare && mvn release:perform
