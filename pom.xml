@@ -48,7 +48,7 @@
     <properties>
         <jdkVersion>1.5</jdkVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <gpg.keyname>9EBE28E4AB7D7BDA</gpg.keyname>
+		<gpg.keyname>${env.GPG_KEY_ID}</gpg.keyname>
     </properties>
 
     <dependencies>

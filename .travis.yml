@@ -1,2 +1,33 @@
 language: java
 
+jdk:
+  - openjdk8
+
+env:
+  global:
+    - ENCRYPTED_GPG_KEY_LOCATION=".travis/secret.gpg.enc"
+    - GPG_KEY_LOCATION=".travis/secret.gpg"
+    - # GPG_KEY_ID
+    - secure: "NTjA0NkQWYQVD9+aw8fJuM6zbj89Z7IqrJTbj2mrjgir/Nf+q4yaBwlKGh/FjNdsPV7dfitMyl856xfXIgHb9yOVVpDv99RWKSPe1AWV5YvM/Uiv73Aa+UlUreF6K+7UNwBmTfetfYEfsVgqvgmhclSHjCNMZZ/c0Xnlm1kfLNrBdrwaC++6YXzRroyr/dbEcuAbZGxt/X9t8xUan2r43xZf2n4N1vDFMI3Joxz64ZLy1jznWxXJzMx+tASiWjPQcfEIaZmxz89lntuKd/fnh//lmlP0q0OPHKGI53zi9d6T1rqiKgfxO6SLOei288qaSWWgMmyuosINLRpsXuZskFRaC3Q94eIYCARluxiRFyjuLx3FdNNsN0a6zEJn+NdeEPPSp/CfXDENwPe8dx76WUgmMth5CFqGK5YzH8ZOxhKq9lPZLsqYXBijVJkVL9A7+MvtPtPgfoHEJ2YLatEq04hAnIyvgKgBH87SlQPynt45nYGhmj5KCEyMgFt/i6ZqN8yY0xxp+GjrU9kmtMJ3ojDmspkDF5Zi0AU7OvprA9UURHHwADzYflpU1L51a4Ec4G6/K3JY7xfDjPBMf3gEDgZqbBQqGREypFfrNDCzOCaOACgnitiDCZp0Dx/J95ae1/nxx21kmhPBExSSZqbUTuCijEejBlbmGXTWjzXV/hc="
+    - # GPG_PASSPHRASE
+    - secure: "Ckc4AjtKGC5Gczkotpg3kCPDFrlHnC602Ykn9uWfv8Ioqt+yOwxnRYU063WovPF5u7DdDiVEwd3YYv1mZiYFyqhf+UuoItSj+9Gzn90Vv9Gpoa5pURAWefUYYxQhpdHvLIRBQzgzhK9qZ0VSzBUVFUHB5GZC2C/oMxbZ6M1uNss+JfruOaV6jnEt3O4UjYqnMCZYn8xtC9v+/+5H8zVWCpfvpW3AcbUUzuavm0xeb0YRRoOBcoWd4PlhnCDfpnWnw71yQszlCY4AQjKIO/5ajDBHtH4xMvQNZHfNJNIx5UxmhXZbEVZCnXnyL5R2/dO5cAghs4APj+LseBB3uIX0hyWJjJzfSdJ9DiNdTBOQKP9eWlmfXAoWVzoGzEgtW2nzMoDvlB+uNw0k0d0MuSzsnbS10wA/NgZfjSRmlmnsVMbEc6dTkNoKpLvltMmsJlUaH3qfreCodfXLV7akwAVb8qXMKirlkIAre1HqM/DniLmUZe4hRO2ZiX8JSJsmU349ICyePtNrvOMnvKRlwd4FkbYk8XpAXNJV+2ox1gS18z6QhDdaRkaYYksB24PALOt0GpT4pPVGVoiwhM6PRcpPsma0TQzmpw0IzvX3ZxRzdDWHi8wWvuh6fQEuICbzTXC7kfxlVIg5aDWn+/BwsnFl66iyKq2YECYquIIlZBp+ww8="
+	- # CI_DEPLOY_USERNAME
+    - secure: "Q03hCerQ2a4MWLYfBPyB4igyV9Rl02Lt2P/HgRJI2fSVFY2sdiEJdJMhKUkcEWFe6rEbTUacGn4OmsxsppwIMf1ttGd7Ral5j5mKY/etaCDbNSzyFFRsaC5pepwPCrwJUBFsjsQcpt4FZDAR/FvsOm+bQkouZCExPeZ23KszkzvVwGS1f51+FR2B4VmKytwbQzMcwlvwYEaLt4T2XJ3h3CEQrDcaTMowmtBYikIaVAyKm+jOyUr/sb5lZs3kt6jsUPWicExnQrKFaDIEPNdWBV7V6F+Wphg/Tzq+TEPBcpRXB1Jwvuiwhs/AlAD8THNaUOvcOnXMYmv0/NpUzIh8MfTeP0NsMeIi3b8t0JeT5JV/pkpDKoDlbq9+eeFhoh8A3RNpC4yQiGxgI/AaaZfDFyRS91iO8u/Iiwxw5hH+FVlxqF3MTtwyUsW8eoDZKGe6d6sfHf63JAyfj3NFW5FlZ605AQ60RYO2lyeMHYoP7F08/vSgQ+IUrmt99heLeI/+vd+OlEbQO7ZWlROWDkn11o5gAxAK2sZgzZ9AZR0iiIGsHfk1jh6swz1LmL0EqqDpCK6BOrqPb2EoBvKCXGuj2Gg39NPGjc7Tv5RkuT2oDFl7Q3HenDeZX5z7CSEpt8fPrfAulz65Kwen/NAsSfBnyuVqzNgnlHDerK2Zz4s8czU="
+	- # CI_DEPLOY_PASSWORD
+    - secure: "rSFsNTy3atyCZ3yUa/qdN9S23gWN7QBT+BvIKsF9JKETLw42/Y28fXFmJxYzwZPcNViQLT8/42DwMOsmiRLMw69Aw8PG1NqEHAVqw4Tmeb3u5Y6G9cmbtXi68GSaL3UJ0RrtY0097ga1mwF2qE23aM8QMgpl+ngJH5tBARd/oDD+Sv0K0yXKT4xZzsTY2FHjadZODX/zqsSfP9nQjnN1NolyzVFn/3HPqwXqSRL64W9X7kYx2x165N474iAqxrpuYhkoUO4tF8TZx1tPOos7/dE8UERV57RW7Yq9d44w1tnaMP3+jdZ+p72oYvzu94o/7rt6urp45Ue1kjZkfXW/DUMXdFQh/40909y/Zw/+pHEMgUQD0NNklrDQhw5cqedtWFtZ3TmEO1D40JAYISvFusXgCrRt+SxKRpg0t2geIsjEOOT/Rex8Hm+E3A7q/QqAXBnHaVKa1EqVtErLMbtlm1+NWVpuyo0dmyWuBmNcjSuRLNmnIwsdXrTLXw9Ox53NNfii0s1pyqQxubjRBjdcQidR2Gt+Uj4ST1+y/OckP4FbiUWlokUm2F9Jo5vU6NgcQ4ngd+ZQIuiiwyoPHxP8JxDXyA7+plhRLt6qfRqbwhAeH0J5ddAxRvh4bRRE8b/ex65UijSEDFfKDg1Xzrpl02+WyZw5oF5agXVdL7k1/lU="
+
+git:
+  depth: 10
+  quiet: true
+
+before_install:
+  - chmod -R ug+x .travis
+  - .travis/install.sh
+
+jobs:
+  include:
+    - stage: test
+      if: branch != master
+    - stage: release
+      if: branch = master
+      script: .travis/deploy.sh
