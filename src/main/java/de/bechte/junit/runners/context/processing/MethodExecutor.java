@@ -35,21 +35,21 @@ import static de.bechte.junit.runners.util.ReflectionUtil.getClassHierarchy;
  *
  * Note: All annotations are evaluated for the entire context hierarchy of the test instance. Example:
  *
- * <code>
+ * <pre>
  *   public class A {
- *     @Before public void setUpA() {...}
- *     @After public void tearDownA() {...}
+ *     &#064;Before public void setUpA() {...}
+ *     &#064;After public void tearDownA() {...}
  *
- *     @Test public void test1() {...}
+ *     &#064;Test public void test1() {...}
  *
  *     public class B {
- *       @Before public void setUpB() {...}
- *       @After public void tearDownB() {...}
+ *       &#064;Before public void setUpB() {...}
+ *       &#064;After public void tearDownB() {...}
  *
- *       @Test public void test2() {...}
+ *       &#064;Test public void test2() {...}
  *     }
  *   }
- * </code>
+ * </pre>
  *
  * When test2 is executed, the following methods are called in sequence:
  * setUpA(), setUpB(), test2(), tearDownB(), tearDownA()
