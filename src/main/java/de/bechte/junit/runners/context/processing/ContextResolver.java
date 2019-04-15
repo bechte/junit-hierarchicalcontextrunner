@@ -72,7 +72,11 @@ public class ContextResolver implements ChildResolver<Class<?>> {
      * @return a boolean value
      */
     protected boolean isAllowed(final Class<?> candidate) {
-        return isNotStatic(candidate) && isPublic(candidate) && isNotIgnored(candidate);
+        return isNotAbstract(candidate) && isNotStatic(candidate) && isPublic(candidate) && isNotIgnored(candidate);
+    }
+
+    private boolean isNotAbstract(Class<?> candidate) {
+        return !Modifier.isAbstract(candidate.getModifiers());
     }
 
     private boolean isNotStatic(Class<?> candidate) {

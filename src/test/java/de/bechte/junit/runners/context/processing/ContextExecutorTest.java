@@ -2,6 +2,7 @@ package de.bechte.junit.runners.context.processing;
 
 import de.bechte.junit.runners.context.description.ContextDescriber;
 import de.bechte.junit.stubs.ContextTestClassStub;
+import de.bechte.junit.stubs.ContextTestClassWithInheritedAbstractInnerClassStub;
 import de.bechte.junit.stubs.EmptyTestClassStub;
 import de.bechte.junit.stubs.SimpleTestClassStub;
 import org.junit.Before;
@@ -58,4 +59,15 @@ public class ContextExecutorTest {
         verify(notifier, times(2)).fireTestFailure(any(Failure.class));
         verifyNoMoreInteractions(notifier);
     }
+
+    @Test
+    public void verifyNotificationsForExecutionOf_ContextTestClassWithInheritedAbstractInnerClassStub() throws Exception {
+        executor.run(null, ContextTestClassWithInheritedAbstractInnerClassStub.class, notifier);
+
+        verify(notifier, times(3)).fireTestStarted(any(Description.class));
+        verify(notifier, times(0)).fireTestFailure(any(Failure.class));
+        verify(notifier, times(3)).fireTestFinished(any(Description.class));
+        verifyNoMoreInteractions(notifier);
+    }
+
 }

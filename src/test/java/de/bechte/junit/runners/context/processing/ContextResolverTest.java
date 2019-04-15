@@ -64,4 +64,13 @@ public class ContextResolverTest {
         assertThat(children, hasSize(1));
         assertThat(children, hasItem(ContextTestClassWithIgnoreStub.A.class));
     }
+
+    @Test
+    public void verifyThatAbstractSubContextsAreIgnored() {
+        TestClass testClass = TestClassPool.forClass(ContextTestClassWithInheritedAbstractInnerClassStub.class);
+        List<Class<?>> children = resolver.getChildren(testClass);
+        assertThat(children, hasSize(2));
+        assertThat(children, hasItem(ContextTestClassWithInheritedAbstractInnerClassStub.B.class));
+        assertThat(children, hasItem(ContextTestClassWithInheritedAbstractInnerClassStub.C.class));
+    }
 }
